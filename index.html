@@ -121,7 +121,7 @@
         <div class="relative rounded-lg overflow-hidden mb-8 shadow-lg">
             <img src="https://raw.githubusercontent.com/chesterchasis/abuapp/refs/heads/main/cielo.png" 
                  alt="Imagen de fondo inspiradora" 
-                 class="absolute inset-0 w-full h-full object-cover z-0 opacity-60" onerror="this.onerror=null; this.src=https://raw.githubusercontent.com/chesterchasis/abuapp/refs/heads/main/cielo.png;">
+                 class="absolute inset-0 w-full h-full object-cover z-0 opacity-60" onerror="this.onerror=null; this.src='https://placehold.co/1200x400/e2e8f0/64748b?text=Imagen+No+Disponible';">
             
             <div class="relative z-10 p-6 md:p-10 text-center text-white">
                 <header class="mb-6">
@@ -282,14 +282,14 @@
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 
         // Configuración de Firebase
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "YOUR_API_KEY", 
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+        const firebaseConfig = {
+            apiKey: "AIzaSyCB_GtOMByc22KD__hd0dp1Y1XijFehCtE",
+            authDomain: "abuapp-ed946.firebaseapp.com",
+            projectId: "abuapp-ed946",
+            storageBucket: "abuapp-ed946.firebasestorage.app",
+            messagingSenderId: "144970687143",
+            appId: "1:144970687143:web:35ad5f75b89af8d2c4f182"
+            };
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'calendario-bienestar-default';
 
         // Inicializar Firebase
