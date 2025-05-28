@@ -7,45 +7,46 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f4f7f6; /* Un verde muy suave */
+            background-color: #f0f4f8; /* Un azul cielo muy suave */
         }
         .calendar-day {
             min-height: 100px;
             transition: background-color 0.3s;
         }
         .calendar-day:hover {
-            background-color: #e6f3e6; /* Un verde más claro al pasar el ratón */
+            background-color: #e6eef5;
         }
         .calendar-day.has-appointment {
-            background-color: #cce8cc; /* Verde para días con citas */
+            background-color: #cce0f5; /* Azul claro para días con citas */
             font-weight: bold;
         }
         .calendar-day.selected {
-            background-color: #a3d3a3; /* Verde más oscuro para el día seleccionado */
-            border: 2px solid #5a8c5a;
+            background-color: #a3c2e0; /* Azul más oscuro para el día seleccionado */
+            border: 2px solid #5a7b9a;
         }
         .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
             left: 0;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.4); 
         }
         .modal-content {
             background-color: #fefefe;
-            margin: 10% auto; /* 10% from the top and centered */
+            margin: 10% auto; 
             padding: 20px;
             border: 1px solid #888;
             width: 80%;
             max-width: 500px;
             border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         .close-button {
             color: #aaa;
@@ -60,24 +61,23 @@
             cursor: pointer;
         }
         .btn-primary {
-            background-color: #4CAF50; /* Verde */
+            background-color: #3b82f6; /* Azul primario de Tailwind */
             color: white;
         }
         .btn-primary:hover {
-            background-color: #45a049;
+            background-color: #2563eb;
         }
         .btn-secondary {
-            background-color: #f0f0f0;
-            color: #333;
+            background-color: #e5e7eb; /* Gris claro de Tailwind */
+            color: #374151; /* Gris oscuro */
         }
         .btn-secondary:hover {
-            background-color: #e0e0e0;
+            background-color: #d1d5db;
         }
-        .bible-verse-card {
-            background-color: #e6f3e6; /* Verde claro */
-            border-left: 5px solid #4CAF50; /* Borde verde */
-        }
-        /* Estilos para el mensaje de carga */
+        /* COMENTARIO: Estilos para el versículo bíblico fueron simplificados o eliminados 
+           ya que ahora se aplican clases de Tailwind directamente en el HTML 
+           para su integración con la imagen de fondo. */
+
         #loading-indicator {
             display: none;
             position: fixed;
@@ -97,7 +97,7 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            border-left-color: #4CAF50; /* Verde */
+            border-left-color: #3b82f6; /* Azul */
             animation: spin 1s ease infinite;
             margin-right: 10px;
         }
@@ -105,6 +105,8 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* COMENTARIO: El contenedor de imagen de cabecera anterior fue eliminado.
+           La nueva cabecera con imagen de fondo se maneja con clases de Tailwind directamente. */
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -115,54 +117,69 @@
     </div>
 
     <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-xl">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-green-700">🗓️ Calendario de Bienestar 👵</h1>
-            <p class="text-gray-600 text-lg mt-2">Organiza tus citas médicas y cuida tu salud.</p>
-            <p class="text-sm text-gray-500 mt-1">ID de Usuario: <span id="userIdDisplay"></span></p>
-        </header>
 
-        <div id="bibleVerseCard" class="bible-verse-card p-6 my-6 rounded-lg shadow">
-            <h3 class="text-xl font-semibold text-green-800 mb-2"><i class="fas fa-book-open mr-2"></i>Versículo del Día</h3>
-            <p id="bibleVerseText" class="text-gray-700 italic">"El Señor es mi pastor, nada me faltará." - Salmo 23:1</p>
-            <button id="newVerseButton" class="mt-3 px-4 py-2 text-sm btn-secondary rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
-                <i class="fas fa-sync-alt mr-1"></i> Nuevo Versículo
-            </button>
+        <div class="relative rounded-lg overflow-hidden mb-8 shadow-lg">
+            <img src="https://raw.githubusercontent.com/chesterchasis/abuapp/refs/heads/main/cielo.png?token=GHSAT0AAAAAADDVXFE5OSRM5C4KFZR2IYBE2BXD5IA" 
+                 alt="Imagen de fondo inspiradora" 
+                 class="absolute inset-0 w-full h-full object-cover z-0 opacity-60" onerror="this.onerror=null; this.src='https://placehold.co/1200x400/e2e8f0/64748b?text=Imagen+No+Disponible';">
+            
+            <div class="relative z-10 p-6 md:p-10 text-center text-white">
+                <header class="mb-6">
+                    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-shadow-md">🗓️ Calendario de Bienestar 👵</h1>
+                    <p class="text-md sm:text-lg md:text-xl mt-2 text-shadow-sm">Organiza tus citas médicas y cuida tu salud.</p>
+                    <p class="text-sm mt-2 text-shadow-sm">ID de Usuario: <span id="userIdDisplay" class="font-semibold"></span></p>
+                </header>
+
+                <div id="bibleVerseCard" class="p-4 bg-black bg-opacity-40 backdrop-blur-sm rounded-xl inline-block max-w-md sm:max-w-lg md:max-w-2xl mx-auto">
+                    <div class="flex items-center justify-center">
+                        <i class="fas fa-book-open text-2xl sm:text-3xl mr-3 sm:mr-4"></i>
+                        <div>
+                            <p id="bibleVerseText" class="text-base sm:text-lg italic">"El Señor es mi pastor, nada me faltará."</p>
+                            <cite id="bibleVerseCite" class="block text-xs sm:text-sm opacity-90 mt-1">- Salmo 23:1</cite>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="md:col-span-2">
+        <div class="flex flex-col gap-8">
+            <div> 
                 <section id="calendar-section" class="mb-8">
                     <div class="flex justify-between items-center mb-4">
-                        <button id="prevMonth" class="px-4 py-2 btn-secondary rounded-lg hover:bg-gray-300"><i class="fas fa-chevron-left"></i> Mes Anterior</button>
-                        <h2 id="currentMonthYear" class="text-2xl font-semibold text-green-700"></h2>
-                        <button id="nextMonth" class="px-4 py-2 btn-secondary rounded-lg hover:bg-gray-300">Mes Siguiente <i class="fas fa-chevron-right"></i></button>
+                        <button id="prevMonth" class="px-3 py-2 sm:px-4 btn-secondary rounded-lg hover:bg-gray-300 text-sm sm:text-base"><i class="fas fa-chevron-left"></i> Mes Ant.</button>
+                        <h2 id="currentMonthYear" class="text-xl sm:text-2xl font-semibold text-blue-700 text-center mx-2"></h2>
+                        <button id="nextMonth" class="px-3 py-2 sm:px-4 btn-secondary rounded-lg hover:bg-gray-300 text-sm sm:text-base">Mes Sig. <i class="fas fa-chevron-right"></i></button>
                     </div>
                     <div id="calendarGrid" class="grid grid-cols-7 gap-1 border border-gray-300 rounded-lg p-2 bg-gray-50">
-                        <div class="text-center font-semibold text-gray-700 py-2">Dom</div>
-                        <div class="text-center font-semibold text-gray-700 py-2">Lun</div>
-                        <div class="text-center font-semibold text-gray-700 py-2">Mar</div>
-                        <div class="text-center font-semibold text-gray-700 py-2">Mié</div>
-                        <div class="text-center font-semibold text-gray-700 py-2">Jue</div>
-                        <div class="text-center font-semibold text-gray-700 py-2">Vie</div>
-                        <div class="text-center font-semibold text-gray-700 py-2">Sáb</div>
+                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Dom</div>
+                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Lun</div>
+                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Mar</div>
+                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Mié</div>
+                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Jue</div>
+                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Vie</div>
+                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Sáb</div>
                         </div>
                 </section>
 
-                <section id="selected-day-info" class="bg-green-50 p-6 rounded-lg shadow">
-                    <h3 class="text-xl font-semibold text-green-700 mb-3">Información para el <span id="selectedDateDisplay">Día Seleccionado</span></h3>
+                <section id="selected-day-info" class="bg-blue-50 p-4 sm:p-6 rounded-lg shadow">
+                    <h3 class="text-lg sm:text-xl font-semibold text-blue-700 mb-3">Información para el <span id="selectedDateDisplay">Día Seleccionado</span></h3>
                     <div id="appointmentsForDay" class="space-y-3">
                         <p class="text-gray-600">Selecciona un día en el calendario para ver las citas.</p>
                     </div>
-                     <button id="openAddAppointmentModalButton" class="mt-4 px-4 py-2 btn-primary rounded-lg w-full md:w-auto"><i class="fas fa-plus-circle mr-2"></i>Añadir Cita</button>
+                     <button id="openAddAppointmentModalButton" class="mt-4 px-4 py-2 btn-primary rounded-lg w-full md:w-auto text-sm sm:text-base"><i class="fas fa-plus-circle mr-2"></i>Añadir Cita</button>
                 </section>
             </div>
 
-            <div class="md:col-span-1">
-                <section id="blood-pressure-section" class="bg-blue-50 p-6 rounded-lg shadow">
-                    <h3 class="text-xl font-semibold text-blue-700 mb-4"><i class="fas fa-heartbeat mr-2"></i>Registro de Tensión Arterial</h3>
-                    <button id="openAddBPModalButton" class="w-full px-4 py-2 mb-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"><i class="fas fa-plus-circle mr-2"></i>Añadir Toma de Tensión</button>
-                    <div id="bloodPressureLog" class="space-y-3 max-h-96 overflow-y-auto">
+            <div> 
+                <section id="blood-pressure-section" class="bg-sky-50 p-4 sm:p-6 rounded-lg shadow"> 
+                    <h3 class="text-lg sm:text-xl font-semibold text-sky-700 mb-4"><i class="fas fa-heartbeat mr-2"></i>Registro de Tensión Arterial</h3>
+                    <button id="openAddBPModalButton" class="w-full px-4 py-2 mb-4 bg-sky-500 text-white rounded-lg hover:bg-sky-600 text-sm sm:text-base"><i class="fas fa-plus-circle mr-2"></i>Añadir Toma de Tensión</button>
+                    <div id="bloodPressureLog" class="space-y-3 max-h-60 overflow-y-auto mb-6"> 
                         <p class="text-gray-600">Aún no hay registros de tensión.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-md sm:text-lg font-semibold text-sky-700 mb-2">Evolución de la Tensión</h4>
+                        <canvas id="bpChart" class="rounded-lg"></canvas>
+                        <p id="bpChartMessage" class="text-sm text-gray-500 mt-2 text-center"></p>
                     </div>
                 </section>
             </div>
@@ -172,20 +189,20 @@
     <div id="appointmentModal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="closeAppointmentModal">&times;</span>
-            <h3 id="appointmentModalTitle" class="text-2xl font-semibold mb-4 text-green-700">Añadir Nueva Cita</h3>
+            <h3 id="appointmentModalTitle" class="text-xl sm:text-2xl font-semibold mb-4 text-blue-700">Añadir Nueva Cita</h3>
             <form id="appointmentForm">
                 <input type="hidden" id="appointmentId">
                 <div class="mb-4">
                     <label for="appointmentDate" class="block text-sm font-medium text-gray-700">Fecha:</label>
-                    <input type="date" id="appointmentDate" name="appointmentDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" required>
+                    <input type="date" id="appointmentDate" name="appointmentDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
                 </div>
                 <div class="mb-4">
                     <label for="appointmentTime" class="block text-sm font-medium text-gray-700">Hora:</label>
-                    <input type="time" id="appointmentTime" name="appointmentTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" required>
+                    <input type="time" id="appointmentTime" name="appointmentTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
                 </div>
                 <div class="mb-4">
                     <label for="appointmentType" class="block text-sm font-medium text-gray-700">Tipo de Cita:</label>
-                    <select id="appointmentType" name="appointmentType" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" required>
+                    <select id="appointmentType" name="appointmentType" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
                         <option value="Hospital">Hospital</option>
                         <option value="Médico de Cabecera">Médico de Cabecera</option>
                         <option value="Cirujano">Especialista: Cirujano</option>
@@ -196,11 +213,11 @@
                 </div>
                 <div class="mb-4">
                     <label for="appointmentNotes" class="block text-sm font-medium text-gray-700">Notas Adicionales:</label>
-                    <textarea id="appointmentNotes" name="appointmentNotes" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"></textarea>
+                    <textarea id="appointmentNotes" name="appointmentNotes" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
                 </div>
                 <div class="flex justify-end space-x-3">
-                    <button type="button" id="cancelAppointment" class="px-4 py-2 btn-secondary rounded-lg">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 btn-primary rounded-lg">Guardar Cita</button>
+                    <button type="button" id="cancelAppointment" class="px-4 py-2 btn-secondary rounded-lg text-sm sm:text-base">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 btn-primary rounded-lg text-sm sm:text-base">Guardar Cita</button>
                 </div>
             </form>
         </div>
@@ -209,37 +226,37 @@
     <div id="bpModal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="closeBPModal">&times;</span>
-            <h3 class="text-2xl font-semibold mb-4 text-blue-700">Añadir Toma de Tensión</h3>
+            <h3 class="text-xl sm:text-2xl font-semibold mb-4 text-sky-700">Añadir Toma de Tensión</h3>
             <form id="bpForm">
                 <div class="mb-4">
                     <label for="bpDate" class="block text-sm font-medium text-gray-700">Fecha:</label>
-                    <input type="date" id="bpDate" name="bpDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                    <input type="date" id="bpDate" name="bpDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required>
                 </div>
                 <div class="mb-4">
                     <label for="bpTime" class="block text-sm font-medium text-gray-700">Hora:</label>
-                    <input type="time" id="bpTime" name="bpTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                    <input type="time" id="bpTime" name="bpTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required>
                 </div>
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="bpSystolic" class="block text-sm font-medium text-gray-700">Sistólica (Alta):</label>
-                        <input type="number" id="bpSystolic" name="bpSystolic" placeholder="Ej: 120" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                        <input type="number" id="bpSystolic" name="bpSystolic" placeholder="Ej: 120" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required>
                     </div>
                     <div>
                         <label for="bpDiastolic" class="block text-sm font-medium text-gray-700">Diastólica (Baja):</label>
-                        <input type="number" id="bpDiastolic" name="bpDiastolic" placeholder="Ej: 80" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                        <input type="number" id="bpDiastolic" name="bpDiastolic" placeholder="Ej: 80" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required>
                     </div>
                 </div>
                 <div class="mb-4">
                     <label for="bpPulse" class="block text-sm font-medium text-gray-700">Pulso (opcional):</label>
-                    <input type="number" id="bpPulse" name="bpPulse" placeholder="Ej: 70" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <input type="number" id="bpPulse" name="bpPulse" placeholder="Ej: 70" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
                 </div>
                 <div class="mb-4">
                     <label for="bpNotes" class="block text-sm font-medium text-gray-700">Notas (opcional):</label>
-                    <textarea id="bpNotes" name="bpNotes" rows="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                    <textarea id="bpNotes" name="bpNotes" rows="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"></textarea>
                 </div>
                 <div class="flex justify-end space-x-3">
-                     <button type="button" id="cancelBP" class="px-4 py-2 btn-secondary rounded-lg">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Guardar Toma</button>
+                     <button type="button" id="cancelBP" class="px-4 py-2 btn-secondary rounded-lg text-sm sm:text-base">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 text-sm sm:text-base">Guardar Toma</button>
                 </div>
             </form>
         </div>
@@ -247,11 +264,11 @@
 
     <div id="confirmDeleteModal" class="modal">
         <div class="modal-content">
-            <h3 class="text-xl font-semibold mb-4">Confirmar Eliminación</h3>
+            <h3 class="text-lg sm:text-xl font-semibold mb-4">Confirmar Eliminación</h3>
             <p id="confirmDeleteMessage">¿Estás seguro de que quieres eliminar este elemento?</p>
             <div class="flex justify-end space-x-3 mt-6">
-                <button id="cancelDeleteButton" class="px-4 py-2 btn-secondary rounded-lg">Cancelar</button>
-                <button id="confirmDeleteButton" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Eliminar</button>
+                <button id="cancelDeleteButton" class="px-4 py-2 btn-secondary rounded-lg text-sm sm:text-base">Cancelar</button>
+                <button id="confirmDeleteButton" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm sm:text-base">Eliminar</button>
             </div>
         </div>
     </div>
@@ -264,10 +281,9 @@
         import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, Timestamp, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 
-
-        // Configuración de Firebase (usar variables globales si están disponibles)
+        // Configuración de Firebase
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "YOUR_API_KEY", // Reemplazar si no se usa __firebase_config
+            apiKey: "YOUR_API_KEY", 
             authDomain: "YOUR_AUTH_DOMAIN",
             projectId: "YOUR_PROJECT_ID",
             storageBucket: "YOUR_STORAGE_BUCKET",
@@ -280,14 +296,15 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        setLogLevel('debug'); // 'debug' para desarrollo, 'silent' para producción
+        setLogLevel('debug'); 
 
         // Variables globales
         let currentYear, currentMonth;
-        let selectedDate = null; // Formato YYYY-MM-DD
+        let selectedDate = null; 
         let userId = null;
-        let appointments = []; // Caché local de citas
-        let bloodPressureReadings = []; // Caché local de lecturas de tensión
+        let appointments = []; 
+        let bloodPressureReadings = []; 
+        let bpChartInstance = null; 
 
         // Elementos del DOM
         const calendarGrid = document.getElementById('calendarGrid');
@@ -298,9 +315,12 @@
         const appointmentsForDay = document.getElementById('appointmentsForDay');
         const bloodPressureLog = document.getElementById('bloodPressureLog');
         const bibleVerseText = document.getElementById('bibleVerseText');
-        const newVerseButton = document.getElementById('newVerseButton');
+        const bibleVerseCite = document.getElementById('bibleVerseCite'); 
         const userIdDisplay = document.getElementById('userIdDisplay');
         const loadingIndicator = document.getElementById('loading-indicator');
+        const bpChartCanvas = document.getElementById('bpChart');
+        const bpChartMessage = document.getElementById('bpChartMessage');
+
 
         // Modales
         const appointmentModal = document.getElementById('appointmentModal');
@@ -323,13 +343,13 @@
         // Botones de confirmación de eliminación
         const cancelDeleteButton = document.getElementById('cancelDeleteButton');
         const confirmDeleteButton = document.getElementById('confirmDeleteButton');
-        let deleteFunction = null; // Función a ejecutar al confirmar eliminación
+        let deleteFunction = null; 
 
         // --- Autenticación y Carga Inicial ---
         async function initializeAppAuth() {
             showLoading("Autenticando...");
             try {
-                await setPersistence(auth, browserLocalPersistence); // Persistir sesión
+                await setPersistence(auth, browserLocalPersistence); 
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     console.log("Intentando signInWithCustomToken...");
                     await signInWithCustomToken(auth, __initial_auth_token);
@@ -339,7 +359,6 @@
                 }
             } catch (error) {
                 console.error("Error en la autenticación inicial:", error);
-                // Considerar mostrar un mensaje al usuario aquí
             }
 
             onAuthStateChanged(auth, async (user) => {
@@ -352,7 +371,6 @@
                     userId = null;
                     userIdDisplay.textContent = "No autenticado";
                     console.log("Usuario no autenticado.");
-                    // Manejar caso de no autenticación (ej. deshabilitar funciones)
                     hideLoading();
                 }
             });
@@ -363,23 +381,22 @@
             showLoading("Cargando datos...");
             const today = new Date();
             currentYear = today.getFullYear();
-            currentMonth = today.getMonth(); // 0-11
-            selectedDate = today.toISOString().split('T')[0]; // Seleccionar hoy por defecto
+            currentMonth = today.getMonth(); 
+            selectedDate = today.toISOString().split('T')[0]; 
 
             await fetchBibleVerse();
             setupEventListeners();
             
-            // Suscribirse a cambios en citas y lecturas de tensión
             subscribeToAppointments();
             subscribeToBloodPressureReadings();
-            // La primera renderización del calendario y datos se hará cuando lleguen los datos de Firestore
-            // a través de los listeners onSnapshot.
-            hideLoading(); // Ocultar después de configurar listeners
+            hideLoading(); 
         }
 
-        // --- Funciones de Carga y Visualización ---
         function showLoading(message = "Cargando...") {
-            loadingIndicator.querySelector('div:last-child').textContent = message;
+            const loadingTextElement = loadingIndicator.querySelector('div:not(.spinner)');
+            if (loadingTextElement) {
+                 loadingTextElement.textContent = message;
+            }
             loadingIndicator.style.display = 'flex';
         }
 
@@ -389,35 +406,28 @@
 
         // --- Calendario ---
         function renderCalendar() {
-            if (!userId) return; // No renderizar si no hay usuario
+            if (!userId) return; 
             showLoading("Actualizando calendario...");
-            calendarGrid.innerHTML = `
-                <div class="text-center font-semibold text-gray-700 py-2">Dom</div>
-                <div class="text-center font-semibold text-gray-700 py-2">Lun</div>
-                <div class="text-center font-semibold text-gray-700 py-2">Mar</div>
-                <div class="text-center font-semibold text-gray-700 py-2">Mié</div>
-                <div class="text-center font-semibold text-gray-700 py-2">Jue</div>
-                <div class="text-center font-semibold text-gray-700 py-2">Vie</div>
-                <div class="text-center font-semibold text-gray-700 py-2">Sáb</div>
-            `; // Limpiar y añadir cabeceras
+            // Limpiar calendario excepto cabeceras de días de la semana
+            const dayCellsContainer = calendarGrid.querySelectorAll('.calendar-day, div:empty');
+            dayCellsContainer.forEach(cell => cell.remove());
+
 
             const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
             const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
             const daysInMonth = lastDayOfMonth.getDate();
-            const startDayOfWeek = firstDayOfMonth.getDay(); // 0 (Dom) - 6 (Sáb)
+            const startDayOfWeek = firstDayOfMonth.getDay(); 
 
             currentMonthYearDisplay.textContent = `${firstDayOfMonth.toLocaleString('es-ES', { month: 'long' })} ${currentYear}`;
 
-            // Rellenar días vacíos al inicio del mes
             for (let i = 0; i < startDayOfWeek; i++) {
                 const emptyCell = document.createElement('div');
                 calendarGrid.appendChild(emptyCell);
             }
 
-            // Rellenar días del mes
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayCell = document.createElement('div');
-                dayCell.classList.add('calendar-day', 'p-2', 'border', 'border-gray-200', 'text-center', 'cursor-pointer', 'rounded');
+                dayCell.classList.add('calendar-day', 'p-1', 'sm:p-2', 'border', 'border-gray-200', 'text-center', 'cursor-pointer', 'rounded', 'text-xs', 'sm:text-sm');
                 dayCell.textContent = day;
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 dayCell.dataset.date = dateStr;
@@ -431,46 +441,43 @@
 
                 dayCell.addEventListener('click', () => {
                     selectedDate = dateStr;
-                    renderCalendar(); // Re-render para actualizar la clase 'selected'
+                    renderCalendar(); 
                     renderAppointmentsForDay();
                     updateSelectedDateDisplay();
                 });
                 calendarGrid.appendChild(dayCell);
             }
             updateSelectedDateDisplay();
-            renderAppointmentsForDay(); // Asegurar que se actualicen las citas del día
+            renderAppointmentsForDay(); 
             hideLoading();
         }
 
         function updateSelectedDateDisplay() {
             if (selectedDate) {
-                const dateObj = new Date(selectedDate + 'T00:00:00'); // Asegurar que se interprete como local
+                const dateObj = new Date(selectedDate + 'T00:00:00'); 
                 selectedDateDisplay.textContent = dateObj.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             } else {
                 selectedDateDisplay.textContent = "Ningún día seleccionado";
             }
         }
 
-
         // --- Citas ---
         function subscribeToAppointments() {
             if (!userId) return;
             const appointmentsCol = collection(db, `artifacts/${appId}/users/${userId}/appointments`);
-            // const q = query(appointmentsCol, orderBy("date"), orderBy("time")); // Firestore puede requerir índices compuestos para múltiples orderBy
-            const q = query(appointmentsCol); // Simplificado para evitar problemas de índice por ahora
+            const q = query(appointmentsCol); 
 
             onSnapshot(q, (snapshot) => {
                 showLoading("Actualizando citas...");
                 appointments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                 // Ordenar en el cliente si es necesario
                 appointments.sort((a, b) => {
                     const dateA = new Date(`${a.date}T${a.time || '00:00'}`);
                     const dateB = new Date(`${b.date}T${b.time || '00:00'}`);
                     return dateA - dateB;
                 });
                 console.log("Citas actualizadas desde Firestore:", appointments);
-                renderCalendar(); // Re-renderizar calendario para marcar días con citas
-                renderAppointmentsForDay(); // Actualizar lista de citas del día seleccionado
+                renderCalendar(); 
+                renderAppointmentsForDay(); 
                 hideLoading();
             }, (error) => {
                 console.error("Error al suscribirse a las citas:", error);
@@ -480,14 +487,14 @@
 
         function renderAppointmentsForDay() {
             if (!selectedDate || !userId) {
-                appointmentsForDay.innerHTML = '<p class="text-gray-600">Selecciona un día en el calendario para ver las citas.</p>';
+                appointmentsForDay.innerHTML = '<p class="text-gray-600 text-sm sm:text-base">Selecciona un día en el calendario para ver las citas.</p>';
                 return;
             }
 
             const dayAppointments = appointments.filter(app => app.date === selectedDate);
             
             if (dayAppointments.length === 0) {
-                appointmentsForDay.innerHTML = '<p class="text-gray-600">No hay citas para este día.</p>';
+                appointmentsForDay.innerHTML = '<p class="text-gray-600 text-sm sm:text-base">No hay citas para este día.</p>';
                 return;
             }
 
@@ -495,19 +502,18 @@
                 <div class="p-3 bg-white rounded-md shadow border-l-4 ${getAppointmentColor(app.type)}">
                     <div class="flex justify-between items-start">
                         <div>
-                            <h4 class="font-semibold">${app.type}</h4>
-                            <p class="text-sm text-gray-600">${app.time}</p>
-                            ${app.notes ? `<p class="text-sm text-gray-500 mt-1">${app.notes}</p>` : ''}
+                            <h4 class="font-semibold text-sm sm:text-base">${app.type}</h4>
+                            <p class="text-xs sm:text-sm text-gray-600">${app.time}</p>
+                            ${app.notes ? `<p class="text-xs sm:text-sm text-gray-500 mt-1">${app.notes}</p>` : ''}
                         </div>
                         <div>
-                            <button class="edit-appointment text-blue-500 hover:text-blue-700 mr-2" data-id="${app.id}"><i class="fas fa-edit"></i></button>
-                            <button class="delete-appointment text-red-500 hover:text-red-700" data-id="${app.id}"><i class="fas fa-trash-alt"></i></button>
+                            <button class="edit-appointment text-blue-500 hover:text-blue-700 mr-2 p-1" data-id="${app.id}"><i class="fas fa-edit"></i></button>
+                            <button class="delete-appointment text-red-500 hover:text-red-700 p-1" data-id="${app.id}"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </div>
                 </div>
             `).join('');
 
-            // Añadir event listeners para editar/eliminar
             appointmentsForDay.querySelectorAll('.edit-appointment').forEach(button => {
                 button.addEventListener('click', (e) => handleEditAppointment(e.currentTarget.dataset.id));
             });
@@ -516,10 +522,10 @@
             });
         }
         
-        function getAppointmentColor(type) {
+        function getAppointmentColor(type) { 
             switch (type) {
                 case 'Hospital': return 'border-red-500';
-                case 'Médico de Cabecera': return 'border-blue-500';
+                case 'Médico de Cabecera': return 'border-blue-500'; 
                 case 'Cirujano': return 'border-purple-500';
                 case 'Endocrino': return 'border-yellow-500';
                 case 'Enfermera (Tensión)': return 'border-teal-500';
@@ -531,7 +537,7 @@
         async function saveAppointment(e) {
             e.preventDefault();
             if (!userId) {
-                alert("Debes estar autenticado para guardar citas.");
+                console.warn("Debes estar autenticado para guardar citas.");
                 return;
             }
             showLoading("Guardando cita...");
@@ -546,20 +552,18 @@
 
             try {
                 const appointmentCollectionPath = `artifacts/${appId}/users/${userId}/appointments`;
-                if (id) { // Editar
+                if (id) { 
                     const appointmentRef = doc(db, appointmentCollectionPath, id);
                     await updateDoc(appointmentRef, appointmentData);
                     console.log("Cita actualizada con ID: ", id);
-                } else { // Crear
+                } else { 
                     await addDoc(collection(db, appointmentCollectionPath), appointmentData);
                     console.log("Nueva cita añadida");
                 }
                 closeModal(appointmentModal);
                 appointmentForm.reset();
-                // Los listeners onSnapshot se encargarán de actualizar la UI
             } catch (error) {
                 console.error("Error guardando cita: ", error);
-                alert("Error al guardar la cita. Inténtalo de nuevo.");
             } finally {
                 hideLoading();
             }
@@ -586,34 +590,31 @@
                     const appointmentRef = doc(db, `artifacts/${appId}/users/${userId}/appointments`, id);
                     await deleteDoc(appointmentRef);
                     console.log("Cita eliminada con ID: ", id);
-                    // onSnapshot actualizará la UI
                 } catch (error) {
                     console.error("Error eliminando cita: ", error);
-                    alert("Error al eliminar la cita.");
                 } finally {
                     hideLoading();
                 }
             });
         }
 
-        // --- Registro de Tensión Arterial ---
+        // --- Registro de Tensión Arterial y Gráfico ---
         function subscribeToBloodPressureReadings() {
             if (!userId) return;
             const bpCol = collection(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`);
-            // const q = query(bpCol, orderBy("date", "desc"), orderBy("time", "desc")); // Requiere índice
-            const q = query(bpCol); // Simplificado
+            const q = query(bpCol); 
 
             onSnapshot(q, (snapshot) => {
                 showLoading("Actualizando lecturas de tensión...");
                 bloodPressureReadings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                // Ordenar en el cliente
                 bloodPressureReadings.sort((a, b) => {
                     const dateA = new Date(`${a.date}T${a.time || '00:00'}`);
                     const dateB = new Date(`${b.date}T${b.time || '00:00'}`);
-                    return dateB - dateA; // Más recientes primero
+                    return dateA - dateB; 
                 });
                 console.log("Lecturas de tensión actualizadas:", bloodPressureReadings);
                 renderBloodPressureLog();
+                renderBPChart(); 
                 hideLoading();
             }, (error) => {
                 console.error("Error al suscribirse a las lecturas de tensión:", error);
@@ -623,39 +624,117 @@
 
         function renderBloodPressureLog() {
             if (!userId) {
-                 bloodPressureLog.innerHTML = '<p class="text-gray-600">Debes estar autenticado para ver el registro.</p>';
+                 bloodPressureLog.innerHTML = '<p class="text-gray-600 text-sm sm:text-base">Debes estar autenticado para ver el registro.</p>';
                 return;
             }
-            if (bloodPressureReadings.length === 0) {
-                bloodPressureLog.innerHTML = '<p class="text-gray-600">Aún no hay registros de tensión.</p>';
+            const reversedReadings = [...bloodPressureReadings].reverse(); 
+
+            if (reversedReadings.length === 0) {
+                bloodPressureLog.innerHTML = '<p class="text-gray-600 text-sm sm:text-base">Aún no hay registros de tensión.</p>';
                 return;
             }
 
-            bloodPressureLog.innerHTML = bloodPressureReadings.map(bp => {
-                const bpDate = new Date(bp.date + 'T' + bp.time); // Asegurar que se interprete como local
+            bloodPressureLog.innerHTML = reversedReadings.map(bp => {
+                const bpDate = new Date(bp.date + 'T' + (bp.time || '00:00:00')); 
                 return `
-                <div class="p-3 bg-white rounded-md shadow border-l-4 border-blue-500">
+                <div class="p-3 bg-white rounded-md shadow border-l-4 border-sky-500">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="font-semibold">${bp.systolic} / ${bp.diastolic} mmHg ${bp.pulse ? `(${bp.pulse} ppm)` : ''}</p>
-                            <p class="text-sm text-gray-600">${bpDate.toLocaleDateString('es-ES')} ${bp.time}</p>
-                            ${bp.notes ? `<p class="text-sm text-gray-500 mt-1">${bp.notes}</p>` : ''}
+                            <p class="font-semibold text-sm sm:text-base">${bp.systolic} / ${bp.diastolic} mmHg ${bp.pulse ? `(${bp.pulse} ppm)` : ''}</p>
+                            <p class="text-xs sm:text-sm text-gray-600">${bpDate.toLocaleDateString('es-ES')} ${bp.time || ''}</p>
+                            ${bp.notes ? `<p class="text-xs sm:text-sm text-gray-500 mt-1">${bp.notes}</p>` : ''}
                         </div>
-                        <button class="delete-bp text-red-500 hover:text-red-700" data-id="${bp.id}"><i class="fas fa-trash-alt"></i></button>
+                        <button class="delete-bp text-red-500 hover:text-red-700 p-1" data-id="${bp.id}"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </div>
             `}).join('');
             
-            // Añadir event listeners para eliminar
             bloodPressureLog.querySelectorAll('.delete-bp').forEach(button => {
                 button.addEventListener('click', (e) => handleDeleteBPReading(e.currentTarget.dataset.id));
             });
         }
 
+        function renderBPChart() {
+            if (!userId) return;
+            const ctx = bpChartCanvas.getContext('2d');
+
+            if (bpChartInstance) {
+                bpChartInstance.destroy(); 
+            }
+
+            if (bloodPressureReadings.length === 0) {
+                bpChartMessage.textContent = "No hay suficientes datos para mostrar el gráfico.";
+                bpChartCanvas.style.display = 'none'; 
+                return;
+            }
+            bpChartCanvas.style.display = 'block'; 
+            bpChartMessage.textContent = "";
+
+
+            const labels = bloodPressureReadings.map(bp => {
+                const date = new Date(bp.date + 'T' + (bp.time || "00:00"));
+                return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+            });
+            const systolicData = bloodPressureReadings.map(bp => bp.systolic);
+            const diastolicData = bloodPressureReadings.map(bp => bp.diastolic);
+
+            bpChartInstance = new Chart(ctx, {
+                type: 'bar', 
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Sistólica (Alta)',
+                            data: systolicData,
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)', 
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Diastólica (Baja)',
+                            data: diastolicData,
+                            backgroundColor: 'rgba(14, 165, 233, 0.7)', 
+                            borderColor: 'rgba(14, 165, 233, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true, 
+                    scales: {
+                        y: {
+                            beginAtZero: false, 
+                            title: {
+                                display: true,
+                                text: 'Presión (mmHg)'
+                            }
+                        },
+                        x: {
+                             title: {
+                                display: true,
+                                text: 'Fecha de Toma'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    }
+                }
+            });
+        }
+
+
         async function saveBPReading(e) {
             e.preventDefault();
             if (!userId) {
-                 alert("Debes estar autenticado para guardar lecturas.");
+                console.warn("Debes estar autenticado para guardar lecturas.");
                 return;
             }
             showLoading("Guardando lectura de tensión...");
@@ -675,10 +754,8 @@
                 console.log("Nueva lectura de tensión añadida");
                 closeModal(bpModal);
                 bpForm.reset();
-                // onSnapshot actualizará la UI
             } catch (error) {
                 console.error("Error guardando lectura de tensión: ", error);
-                alert("Error al guardar la lectura. Inténtalo de nuevo.");
             } finally {
                 hideLoading();
             }
@@ -692,10 +769,8 @@
                     const bpRef = doc(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`, id);
                     await deleteDoc(bpRef);
                     console.log("Lectura de tensión eliminada con ID: ", id);
-                    // onSnapshot actualizará la UI
                 } catch (error) {
                     console.error("Error eliminando lectura de tensión: ", error);
-                    alert("Error al eliminar la lectura.");
                 } finally {
                     hideLoading();
                 }
@@ -705,11 +780,12 @@
         // --- Versículo Bíblico ---
         async function fetchBibleVerse() {
             showLoading("Cargando versículo...");
-            bibleVerseText.textContent = "Cargando versículo...";
-            const prompt = "Dame un versículo bíblico edificante y corto en español. Incluye la cita (libro, capítulo, versículo).";
+            bibleVerseText.textContent = "Cargando...";
+            bibleVerseCite.textContent = "";
+            const prompt = "Proporciona un único versículo bíblico edificante y corto en español, seguido únicamente por su cita entre paréntesis (Libro Capítulo:Versículo). No incluyas ninguna frase introductoria como 'Claro, aquí tienes...' o similar. Ejemplo: Porque de tal manera amó Dios al mundo... (Juan 3:16)";
             let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
             const payload = { contents: chatHistory };
-            const apiKey = ""; // Dejar vacío para que Canvas lo gestione
+            const apiKey = ""; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
             try {
@@ -725,15 +801,26 @@
                 if (result.candidates && result.candidates.length > 0 &&
                     result.candidates[0].content && result.candidates[0].content.parts &&
                     result.candidates[0].content.parts.length > 0) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    bibleVerseText.textContent = text;
+                    let fullText = result.candidates[0].content.parts[0].text;
+                    
+                    const match = fullText.match(/(.*)\s*\(([^)]+)\)$/); 
+                    if (match && match[1] && match[2]) {
+                        bibleVerseText.textContent = match[1].trim();
+                        bibleVerseCite.textContent = `(${match[2].trim()})`;
+                    } else {
+                        bibleVerseText.textContent = fullText;
+                        bibleVerseCite.textContent = ""; 
+                        console.warn("No se pudo extraer la cita del versículo:", fullText);
+                    }
                 } else {
                     bibleVerseText.textContent = "No se pudo cargar el versículo en este momento.";
+                    bibleVerseCite.textContent = "";
                     console.error("Respuesta inesperada de la API de Gemini:", result);
                 }
             } catch (error) {
                 console.error("Error al obtener el versículo bíblico:", error);
                 bibleVerseText.textContent = "No se pudo cargar el versículo. Intenta más tarde.";
+                bibleVerseCite.textContent = "";
             } finally {
                 hideLoading();
             }
@@ -741,14 +828,12 @@
 
         // --- Modales ---
         function openModal(modalElement) {
-            // Pre-rellenar fecha en modales si hay una fecha seleccionada
             if (selectedDate) {
-                if (modalElement === appointmentModal && !document.getElementById('appointmentId').value) { // Solo si es nueva cita
+                if (modalElement === appointmentModal && !document.getElementById('appointmentId').value) { 
                     document.getElementById('appointmentDate').value = selectedDate;
                 }
                 if (modalElement === bpModal) {
                      document.getElementById('bpDate').value = selectedDate;
-                     // Poner hora actual por defecto
                      const now = new Date();
                      document.getElementById('bpTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
                 }
@@ -758,10 +843,9 @@
 
         function closeModal(modalElement) {
             modalElement.style.display = "none";
-            // Resetear formularios al cerrar (opcional, pero bueno para "Añadir")
             if (modalElement === appointmentModal) {
                 appointmentForm.reset();
-                document.getElementById('appointmentId').value = ''; // Asegurar que el ID se limpia
+                document.getElementById('appointmentId').value = ''; 
                 document.getElementById('appointmentModalTitle').textContent = "Añadir Nueva Cita";
             }
             if (modalElement === bpModal) {
@@ -771,7 +855,7 @@
         
         function openConfirmDeleteModal(message, onConfirm) {
             document.getElementById('confirmDeleteMessage').textContent = message;
-            deleteFunction = onConfirm; // Guardar la función a ejecutar
+            deleteFunction = onConfirm; 
             openModal(confirmDeleteModal);
         }
 
@@ -795,14 +879,12 @@
                 renderCalendar();
             });
 
-            newVerseButton.addEventListener('click', fetchBibleVerse);
 
-            // Abrir modales
             openAddAppointmentModalButton.addEventListener('click', () => {
                  document.getElementById('appointmentModalTitle').textContent = "Añadir Nueva Cita";
-                 document.getElementById('appointmentId').value = ''; // Limpiar ID para nueva cita
-                 appointmentForm.reset(); // Limpiar formulario
-                 if(selectedDate) document.getElementById('appointmentDate').value = selectedDate; // Poner fecha seleccionada
+                 document.getElementById('appointmentId').value = ''; 
+                 appointmentForm.reset(); 
+                 if(selectedDate) document.getElementById('appointmentDate').value = selectedDate; 
                  const now = new Date();
                  document.getElementById('appointmentTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
                  openModal(appointmentModal);
@@ -815,16 +897,14 @@
                 openModal(bpModal);
             });
 
-            // Cerrar modales
             closeAppointmentModalButton.addEventListener('click', () => closeModal(appointmentModal));
             cancelAppointmentButton.addEventListener('click', () => closeModal(appointmentModal));
             closeBPModalButton.addEventListener('click', () => closeModal(bpModal));
             cancelBPButton.addEventListener('click', () => closeModal(bpModal));
             
-            // Confirmación de eliminación
             cancelDeleteButton.addEventListener('click', () => {
                 closeModal(confirmDeleteModal);
-                deleteFunction = null; // Limpiar la función de eliminación
+                deleteFunction = null; 
             });
             confirmDeleteButton.addEventListener('click', () => {
                 if (deleteFunction) {
@@ -834,8 +914,6 @@
                 deleteFunction = null;
             });
 
-
-            // Cierre de modal al hacer clic fuera
             window.onclick = function(event) {
                 if (event.target == appointmentModal) {
                     closeModal(appointmentModal);
@@ -849,7 +927,6 @@
                 }
             }
 
-            // Envío de formularios
             appointmentForm.addEventListener('submit', saveAppointment);
             bpForm.addEventListener('submit', saveBPReading);
         }
