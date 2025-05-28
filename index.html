@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario de Bienestar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f6; /* Un verde muy suave */
+        }
+        .calendar-day {
+            min-height: 100px;
+            transition: background-color 0.3s;
+        }
+        .calendar-day:hover {
+            background-color: #e6f3e6; /* Un verde más claro al pasar el ratón */
+        }
+        .calendar-day.has-appointment {
+            background-color: #cce8cc; /* Verde para días con citas */
+            font-weight: bold;
+        }
+        .calendar-day.selected {
+            background-color: #a3d3a3; /* Verde más oscuro para el día seleccionado */
+            border: 2px solid #5a8c5a;
+        }
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; /* 10% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #4CAF50; /* Verde */
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+        .bible-verse-card {
+            background-color: #e6f3e6; /* Verde claro */
+            border-left: 5px solid #4CAF50; /* Borde verde */
+        }
+        /* Estilos para el mensaje de carga */
+        #loading-indicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #4CAF50; /* Verde */
+            animation: spin 1s ease infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="loading-indicator" class="flex items-center justify-center">
+        <div class="spinner"></div>
+        Cargando...
+    </div>
+
+    <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-green-700">🗓️ Calendario de Bienestar 👵</h1>
+            <p class="text-gray-600 text-lg mt-2">Organiza tus citas médicas y cuida tu salud.</p>
+            <p class="text-sm text-gray-500 mt-1">ID de Usuario: <span id="userIdDisplay"></span></p>
+        </header>
+
+        <div id="bibleVerseCard" class="bible-verse-card p-6 my-6 rounded-lg shadow">
+            <h3 class="text-xl font-semibold text-green-800 mb-2"><i class="fas fa-book-open mr-2"></i>Versículo del Día</h3>
+            <p id="bibleVerseText" class="text-gray-700 italic">"El Señor es mi pastor, nada me faltará." - Salmo 23:1</p>
+            <button id="newVerseButton" class="mt-3 px-4 py-2 text-sm btn-secondary rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+                <i class="fas fa-sync-alt mr-1"></i> Nuevo Versículo
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="md:col-span-2">
+                <section id="calendar-section" class="mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="prevMonth" class="px-4 py-2 btn-secondary rounded-lg hover:bg-gray-300"><i class="fas fa-chevron-left"></i> Mes Anterior</button>
+                        <h2 id="currentMonthYear" class="text-2xl font-semibold text-green-700"></h2>
+                        <button id="nextMonth" class="px-4 py-2 btn-secondary rounded-lg hover:bg-gray-300">Mes Siguiente <i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-1 border border-gray-300 rounded-lg p-2 bg-gray-50">
+                        <div class="text-center font-semibold text-gray-700 py-2">Dom</div>
+                        <div class="text-center font-semibold text-gray-700 py-2">Lun</div>
+                        <div class="text-center font-semibold text-gray-700 py-2">Mar</div>
+                        <div class="text-center font-semibold text-gray-700 py-2">Mié</div>
+                        <div class="text-center font-semibold text-gray-700 py-2">Jue</div>
+                        <div class="text-center font-semibold text-gray-700 py-2">Vie</div>
+                        <div class="text-center font-semibold text-gray-700 py-2">Sáb</div>
+                        </div>
+                </section>
+
+                <section id="selected-day-info" class="bg-green-50 p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-green-700 mb-3">Información para el <span id="selectedDateDisplay">Día Seleccionado</span></h3>
+                    <div id="appointmentsForDay" class="space-y-3">
+                        <p class="text-gray-600">Selecciona un día en el calendario para ver las citas.</p>
+                    </div>
+                     <button id="openAddAppointmentModalButton" class="mt-4 px-4 py-2 btn-primary rounded-lg w-full md:w-auto"><i class="fas fa-plus-circle mr-2"></i>Añadir Cita</button>
+                </section>
+            </div>
+
+            <div class="md:col-span-1">
+                <section id="blood-pressure-section" class="bg-blue-50 p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-blue-700 mb-4"><i class="fas fa-heartbeat mr-2"></i>Registro de Tensión Arterial</h3>
+                    <button id="openAddBPModalButton" class="w-full px-4 py-2 mb-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"><i class="fas fa-plus-circle mr-2"></i>Añadir Toma de Tensión</button>
+                    <div id="bloodPressureLog" class="space-y-3 max-h-96 overflow-y-auto">
+                        <p class="text-gray-600">Aún no hay registros de tensión.</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <div id="appointmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeAppointmentModal">&times;</span>
+            <h3 id="appointmentModalTitle" class="text-2xl font-semibold mb-4 text-green-700">Añadir Nueva Cita</h3>
+            <form id="appointmentForm">
+                <input type="hidden" id="appointmentId">
+                <div class="mb-4">
+                    <label for="appointmentDate" class="block text-sm font-medium text-gray-700">Fecha:</label>
+                    <input type="date" id="appointmentDate" name="appointmentDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" required>
+                </div>
+                <div class="mb-4">
+                    <label for="appointmentTime" class="block text-sm font-medium text-gray-700">Hora:</label>
+                    <input type="time" id="appointmentTime" name="appointmentTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" required>
+                </div>
+                <div class="mb-4">
+                    <label for="appointmentType" class="block text-sm font-medium text-gray-700">Tipo de Cita:</label>
+                    <select id="appointmentType" name="appointmentType" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" required>
+                        <option value="Hospital">Hospital</option>
+                        <option value="Médico de Cabecera">Médico de Cabecera</option>
+                        <option value="Cirujano">Especialista: Cirujano</option>
+                        <option value="Endocrino">Especialista: Endocrino</option>
+                        <option value="Enfermera (Tensión)">Enfermera (Tensión)</option>
+                        <option value="Otro Especialista">Otro Especialista</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="appointmentNotes" class="block text-sm font-medium text-gray-700">Notas Adicionales:</label>
+                    <textarea id="appointmentNotes" name="appointmentNotes" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelAppointment" class="px-4 py-2 btn-secondary rounded-lg">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 btn-primary rounded-lg">Guardar Cita</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="bpModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeBPModal">&times;</span>
+            <h3 class="text-2xl font-semibold mb-4 text-blue-700">Añadir Toma de Tensión</h3>
+            <form id="bpForm">
+                <div class="mb-4">
+                    <label for="bpDate" class="block text-sm font-medium text-gray-700">Fecha:</label>
+                    <input type="date" id="bpDate" name="bpDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                </div>
+                <div class="mb-4">
+                    <label for="bpTime" class="block text-sm font-medium text-gray-700">Hora:</label>
+                    <input type="time" id="bpTime" name="bpTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="bpSystolic" class="block text-sm font-medium text-gray-700">Sistólica (Alta):</label>
+                        <input type="number" id="bpSystolic" name="bpSystolic" placeholder="Ej: 120" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                    </div>
+                    <div>
+                        <label for="bpDiastolic" class="block text-sm font-medium text-gray-700">Diastólica (Baja):</label>
+                        <input type="number" id="bpDiastolic" name="bpDiastolic" placeholder="Ej: 80" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="bpPulse" class="block text-sm font-medium text-gray-700">Pulso (opcional):</label>
+                    <input type="number" id="bpPulse" name="bpPulse" placeholder="Ej: 70" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="bpNotes" class="block text-sm font-medium text-gray-700">Notas (opcional):</label>
+                    <textarea id="bpNotes" name="bpNotes" rows="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3">
+                     <button type="button" id="cancelBP" class="px-4 py-2 btn-secondary rounded-lg">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Guardar Toma</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirmDeleteModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-semibold mb-4">Confirmar Eliminación</h3>
+            <p id="confirmDeleteMessage">¿Estás seguro de que quieres eliminar este elemento?</p>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button id="cancelDeleteButton" class="px-4 py-2 btn-secondary rounded-lg">Cancelar</button>
+                <button id="confirmDeleteButton" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        // Importaciones de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, Timestamp, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+
+
+        // Configuración de Firebase (usar variables globales si están disponibles)
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "YOUR_API_KEY", // Reemplazar si no se usa __firebase_config
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'calendario-bienestar-default';
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        setLogLevel('debug'); // 'debug' para desarrollo, 'silent' para producción
+
+        // Variables globales
+        let currentYear, currentMonth;
+        let selectedDate = null; // Formato YYYY-MM-DD
+        let userId = null;
+        let appointments = []; // Caché local de citas
+        let bloodPressureReadings = []; // Caché local de lecturas de tensión
+
+        // Elementos del DOM
+        const calendarGrid = document.getElementById('calendarGrid');
+        const currentMonthYearDisplay = document.getElementById('currentMonthYear');
+        const prevMonthButton = document.getElementById('prevMonth');
+        const nextMonthButton = document.getElementById('nextMonth');
+        const selectedDateDisplay = document.getElementById('selectedDateDisplay');
+        const appointmentsForDay = document.getElementById('appointmentsForDay');
+        const bloodPressureLog = document.getElementById('bloodPressureLog');
+        const bibleVerseText = document.getElementById('bibleVerseText');
+        const newVerseButton = document.getElementById('newVerseButton');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+        const loadingIndicator = document.getElementById('loading-indicator');
+
+        // Modales
+        const appointmentModal = document.getElementById('appointmentModal');
+        const bpModal = document.getElementById('bpModal');
+        const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+
+        const appointmentForm = document.getElementById('appointmentForm');
+        const bpForm = document.getElementById('bpForm');
+
+        // Botones de abrir modal
+        const openAddAppointmentModalButton = document.getElementById('openAddAppointmentModalButton');
+        const openAddBPModalButton = document.getElementById('openAddBPModalButton');
+        
+        // Botones de cerrar modal
+        const closeAppointmentModalButton = document.getElementById('closeAppointmentModal');
+        const closeBPModalButton = document.getElementById('closeBPModal');
+        const cancelAppointmentButton = document.getElementById('cancelAppointment');
+        const cancelBPButton = document.getElementById('cancelBP');
+
+        // Botones de confirmación de eliminación
+        const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+        const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+        let deleteFunction = null; // Función a ejecutar al confirmar eliminación
+
+        // --- Autenticación y Carga Inicial ---
+        async function initializeAppAuth() {
+            showLoading("Autenticando...");
+            try {
+                await setPersistence(auth, browserLocalPersistence); // Persistir sesión
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    console.log("Intentando signInWithCustomToken...");
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    console.log("Intentando signInAnonymously...");
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Error en la autenticación inicial:", error);
+                // Considerar mostrar un mensaje al usuario aquí
+            }
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    userIdDisplay.textContent = userId;
+                    console.log("Usuario autenticado:", userId);
+                    await loadInitialData();
+                } else {
+                    userId = null;
+                    userIdDisplay.textContent = "No autenticado";
+                    console.log("Usuario no autenticado.");
+                    // Manejar caso de no autenticación (ej. deshabilitar funciones)
+                    hideLoading();
+                }
+            });
+        }
+        
+        async function loadInitialData() {
+            if (!userId) return;
+            showLoading("Cargando datos...");
+            const today = new Date();
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth(); // 0-11
+            selectedDate = today.toISOString().split('T')[0]; // Seleccionar hoy por defecto
+
+            await fetchBibleVerse();
+            setupEventListeners();
+            
+            // Suscribirse a cambios en citas y lecturas de tensión
+            subscribeToAppointments();
+            subscribeToBloodPressureReadings();
+            // La primera renderización del calendario y datos se hará cuando lleguen los datos de Firestore
+            // a través de los listeners onSnapshot.
+            hideLoading(); // Ocultar después de configurar listeners
+        }
+
+        // --- Funciones de Carga y Visualización ---
+        function showLoading(message = "Cargando...") {
+            loadingIndicator.querySelector('div:last-child').textContent = message;
+            loadingIndicator.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            loadingIndicator.style.display = 'none';
+        }
+
+        // --- Calendario ---
+        function renderCalendar() {
+            if (!userId) return; // No renderizar si no hay usuario
+            showLoading("Actualizando calendario...");
+            calendarGrid.innerHTML = `
+                <div class="text-center font-semibold text-gray-700 py-2">Dom</div>
+                <div class="text-center font-semibold text-gray-700 py-2">Lun</div>
+                <div class="text-center font-semibold text-gray-700 py-2">Mar</div>
+                <div class="text-center font-semibold text-gray-700 py-2">Mié</div>
+                <div class="text-center font-semibold text-gray-700 py-2">Jue</div>
+                <div class="text-center font-semibold text-gray-700 py-2">Vie</div>
+                <div class="text-center font-semibold text-gray-700 py-2">Sáb</div>
+            `; // Limpiar y añadir cabeceras
+
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+            const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+            const daysInMonth = lastDayOfMonth.getDate();
+            const startDayOfWeek = firstDayOfMonth.getDay(); // 0 (Dom) - 6 (Sáb)
+
+            currentMonthYearDisplay.textContent = `${firstDayOfMonth.toLocaleString('es-ES', { month: 'long' })} ${currentYear}`;
+
+            // Rellenar días vacíos al inicio del mes
+            for (let i = 0; i < startDayOfWeek; i++) {
+                const emptyCell = document.createElement('div');
+                calendarGrid.appendChild(emptyCell);
+            }
+
+            // Rellenar días del mes
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.classList.add('calendar-day', 'p-2', 'border', 'border-gray-200', 'text-center', 'cursor-pointer', 'rounded');
+                dayCell.textContent = day;
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                dayCell.dataset.date = dateStr;
+
+                if (appointments.some(app => app.date === dateStr)) {
+                    dayCell.classList.add('has-appointment');
+                }
+                if (dateStr === selectedDate) {
+                    dayCell.classList.add('selected');
+                }
+
+                dayCell.addEventListener('click', () => {
+                    selectedDate = dateStr;
+                    renderCalendar(); // Re-render para actualizar la clase 'selected'
+                    renderAppointmentsForDay();
+                    updateSelectedDateDisplay();
+                });
+                calendarGrid.appendChild(dayCell);
+            }
+            updateSelectedDateDisplay();
+            renderAppointmentsForDay(); // Asegurar que se actualicen las citas del día
+            hideLoading();
+        }
+
+        function updateSelectedDateDisplay() {
+            if (selectedDate) {
+                const dateObj = new Date(selectedDate + 'T00:00:00'); // Asegurar que se interprete como local
+                selectedDateDisplay.textContent = dateObj.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            } else {
+                selectedDateDisplay.textContent = "Ningún día seleccionado";
+            }
+        }
+
+
+        // --- Citas ---
+        function subscribeToAppointments() {
+            if (!userId) return;
+            const appointmentsCol = collection(db, `artifacts/${appId}/users/${userId}/appointments`);
+            // const q = query(appointmentsCol, orderBy("date"), orderBy("time")); // Firestore puede requerir índices compuestos para múltiples orderBy
+            const q = query(appointmentsCol); // Simplificado para evitar problemas de índice por ahora
+
+            onSnapshot(q, (snapshot) => {
+                showLoading("Actualizando citas...");
+                appointments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                 // Ordenar en el cliente si es necesario
+                appointments.sort((a, b) => {
+                    const dateA = new Date(`${a.date}T${a.time || '00:00'}`);
+                    const dateB = new Date(`${b.date}T${b.time || '00:00'}`);
+                    return dateA - dateB;
+                });
+                console.log("Citas actualizadas desde Firestore:", appointments);
+                renderCalendar(); // Re-renderizar calendario para marcar días con citas
+                renderAppointmentsForDay(); // Actualizar lista de citas del día seleccionado
+                hideLoading();
+            }, (error) => {
+                console.error("Error al suscribirse a las citas:", error);
+                hideLoading();
+            });
+        }
+
+        function renderAppointmentsForDay() {
+            if (!selectedDate || !userId) {
+                appointmentsForDay.innerHTML = '<p class="text-gray-600">Selecciona un día en el calendario para ver las citas.</p>';
+                return;
+            }
+
+            const dayAppointments = appointments.filter(app => app.date === selectedDate);
+            
+            if (dayAppointments.length === 0) {
+                appointmentsForDay.innerHTML = '<p class="text-gray-600">No hay citas para este día.</p>';
+                return;
+            }
+
+            appointmentsForDay.innerHTML = dayAppointments.map(app => `
+                <div class="p-3 bg-white rounded-md shadow border-l-4 ${getAppointmentColor(app.type)}">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold">${app.type}</h4>
+                            <p class="text-sm text-gray-600">${app.time}</p>
+                            ${app.notes ? `<p class="text-sm text-gray-500 mt-1">${app.notes}</p>` : ''}
+                        </div>
+                        <div>
+                            <button class="edit-appointment text-blue-500 hover:text-blue-700 mr-2" data-id="${app.id}"><i class="fas fa-edit"></i></button>
+                            <button class="delete-appointment text-red-500 hover:text-red-700" data-id="${app.id}"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Añadir event listeners para editar/eliminar
+            appointmentsForDay.querySelectorAll('.edit-appointment').forEach(button => {
+                button.addEventListener('click', (e) => handleEditAppointment(e.currentTarget.dataset.id));
+            });
+            appointmentsForDay.querySelectorAll('.delete-appointment').forEach(button => {
+                button.addEventListener('click', (e) => handleDeleteAppointment(e.currentTarget.dataset.id));
+            });
+        }
+        
+        function getAppointmentColor(type) {
+            switch (type) {
+                case 'Hospital': return 'border-red-500';
+                case 'Médico de Cabecera': return 'border-blue-500';
+                case 'Cirujano': return 'border-purple-500';
+                case 'Endocrino': return 'border-yellow-500';
+                case 'Enfermera (Tensión)': return 'border-teal-500';
+                case 'Otro Especialista': return 'border-indigo-500';
+                default: return 'border-gray-500';
+            }
+        }
+
+        async function saveAppointment(e) {
+            e.preventDefault();
+            if (!userId) {
+                alert("Debes estar autenticado para guardar citas.");
+                return;
+            }
+            showLoading("Guardando cita...");
+
+            const id = document.getElementById('appointmentId').value;
+            const appointmentData = {
+                date: document.getElementById('appointmentDate').value,
+                time: document.getElementById('appointmentTime').value,
+                type: document.getElementById('appointmentType').value,
+                notes: document.getElementById('appointmentNotes').value,
+            };
+
+            try {
+                const appointmentCollectionPath = `artifacts/${appId}/users/${userId}/appointments`;
+                if (id) { // Editar
+                    const appointmentRef = doc(db, appointmentCollectionPath, id);
+                    await updateDoc(appointmentRef, appointmentData);
+                    console.log("Cita actualizada con ID: ", id);
+                } else { // Crear
+                    await addDoc(collection(db, appointmentCollectionPath), appointmentData);
+                    console.log("Nueva cita añadida");
+                }
+                closeModal(appointmentModal);
+                appointmentForm.reset();
+                // Los listeners onSnapshot se encargarán de actualizar la UI
+            } catch (error) {
+                console.error("Error guardando cita: ", error);
+                alert("Error al guardar la cita. Inténtalo de nuevo.");
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function handleEditAppointment(id) {
+            const appointment = appointments.find(app => app.id === id);
+            if (appointment) {
+                document.getElementById('appointmentId').value = appointment.id;
+                document.getElementById('appointmentDate').value = appointment.date;
+                document.getElementById('appointmentTime').value = appointment.time;
+                document.getElementById('appointmentType').value = appointment.type;
+                document.getElementById('appointmentNotes').value = appointment.notes || '';
+                document.getElementById('appointmentModalTitle').textContent = "Editar Cita";
+                openModal(appointmentModal);
+            }
+        }
+
+        function handleDeleteAppointment(id) {
+            openConfirmDeleteModal("¿Estás seguro de que quieres eliminar esta cita?", async () => {
+                if (!userId) return;
+                showLoading("Eliminando cita...");
+                try {
+                    const appointmentRef = doc(db, `artifacts/${appId}/users/${userId}/appointments`, id);
+                    await deleteDoc(appointmentRef);
+                    console.log("Cita eliminada con ID: ", id);
+                    // onSnapshot actualizará la UI
+                } catch (error) {
+                    console.error("Error eliminando cita: ", error);
+                    alert("Error al eliminar la cita.");
+                } finally {
+                    hideLoading();
+                }
+            });
+        }
+
+        // --- Registro de Tensión Arterial ---
+        function subscribeToBloodPressureReadings() {
+            if (!userId) return;
+            const bpCol = collection(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`);
+            // const q = query(bpCol, orderBy("date", "desc"), orderBy("time", "desc")); // Requiere índice
+            const q = query(bpCol); // Simplificado
+
+            onSnapshot(q, (snapshot) => {
+                showLoading("Actualizando lecturas de tensión...");
+                bloodPressureReadings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // Ordenar en el cliente
+                bloodPressureReadings.sort((a, b) => {
+                    const dateA = new Date(`${a.date}T${a.time || '00:00'}`);
+                    const dateB = new Date(`${b.date}T${b.time || '00:00'}`);
+                    return dateB - dateA; // Más recientes primero
+                });
+                console.log("Lecturas de tensión actualizadas:", bloodPressureReadings);
+                renderBloodPressureLog();
+                hideLoading();
+            }, (error) => {
+                console.error("Error al suscribirse a las lecturas de tensión:", error);
+                hideLoading();
+            });
+        }
+
+        function renderBloodPressureLog() {
+            if (!userId) {
+                 bloodPressureLog.innerHTML = '<p class="text-gray-600">Debes estar autenticado para ver el registro.</p>';
+                return;
+            }
+            if (bloodPressureReadings.length === 0) {
+                bloodPressureLog.innerHTML = '<p class="text-gray-600">Aún no hay registros de tensión.</p>';
+                return;
+            }
+
+            bloodPressureLog.innerHTML = bloodPressureReadings.map(bp => {
+                const bpDate = new Date(bp.date + 'T' + bp.time); // Asegurar que se interprete como local
+                return `
+                <div class="p-3 bg-white rounded-md shadow border-l-4 border-blue-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-semibold">${bp.systolic} / ${bp.diastolic} mmHg ${bp.pulse ? `(${bp.pulse} ppm)` : ''}</p>
+                            <p class="text-sm text-gray-600">${bpDate.toLocaleDateString('es-ES')} ${bp.time}</p>
+                            ${bp.notes ? `<p class="text-sm text-gray-500 mt-1">${bp.notes}</p>` : ''}
+                        </div>
+                        <button class="delete-bp text-red-500 hover:text-red-700" data-id="${bp.id}"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>
+            `}).join('');
+            
+            // Añadir event listeners para eliminar
+            bloodPressureLog.querySelectorAll('.delete-bp').forEach(button => {
+                button.addEventListener('click', (e) => handleDeleteBPReading(e.currentTarget.dataset.id));
+            });
+        }
+
+        async function saveBPReading(e) {
+            e.preventDefault();
+            if (!userId) {
+                 alert("Debes estar autenticado para guardar lecturas.");
+                return;
+            }
+            showLoading("Guardando lectura de tensión...");
+
+            const bpData = {
+                date: document.getElementById('bpDate').value,
+                time: document.getElementById('bpTime').value,
+                systolic: parseInt(document.getElementById('bpSystolic').value),
+                diastolic: parseInt(document.getElementById('bpDiastolic').value),
+                pulse: document.getElementById('bpPulse').value ? parseInt(document.getElementById('bpPulse').value) : null,
+                notes: document.getElementById('bpNotes').value,
+            };
+
+            try {
+                const bpCollectionPath = `artifacts/${appId}/users/${userId}/bloodPressureReadings`;
+                await addDoc(collection(db, bpCollectionPath), bpData);
+                console.log("Nueva lectura de tensión añadida");
+                closeModal(bpModal);
+                bpForm.reset();
+                // onSnapshot actualizará la UI
+            } catch (error) {
+                console.error("Error guardando lectura de tensión: ", error);
+                alert("Error al guardar la lectura. Inténtalo de nuevo.");
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function handleDeleteBPReading(id) {
+             openConfirmDeleteModal("¿Estás seguro de que quieres eliminar esta toma de tensión?", async () => {
+                if (!userId) return;
+                showLoading("Eliminando lectura...");
+                try {
+                    const bpRef = doc(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`, id);
+                    await deleteDoc(bpRef);
+                    console.log("Lectura de tensión eliminada con ID: ", id);
+                    // onSnapshot actualizará la UI
+                } catch (error) {
+                    console.error("Error eliminando lectura de tensión: ", error);
+                    alert("Error al eliminar la lectura.");
+                } finally {
+                    hideLoading();
+                }
+            });
+        }
+
+        // --- Versículo Bíblico ---
+        async function fetchBibleVerse() {
+            showLoading("Cargando versículo...");
+            bibleVerseText.textContent = "Cargando versículo...";
+            const prompt = "Dame un versículo bíblico edificante y corto en español. Incluye la cita (libro, capítulo, versículo).";
+            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // Dejar vacío para que Canvas lo gestione
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    throw new Error(`Error en la API: ${response.statusText}`);
+                }
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    bibleVerseText.textContent = text;
+                } else {
+                    bibleVerseText.textContent = "No se pudo cargar el versículo en este momento.";
+                    console.error("Respuesta inesperada de la API de Gemini:", result);
+                }
+            } catch (error) {
+                console.error("Error al obtener el versículo bíblico:", error);
+                bibleVerseText.textContent = "No se pudo cargar el versículo. Intenta más tarde.";
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // --- Modales ---
+        function openModal(modalElement) {
+            // Pre-rellenar fecha en modales si hay una fecha seleccionada
+            if (selectedDate) {
+                if (modalElement === appointmentModal && !document.getElementById('appointmentId').value) { // Solo si es nueva cita
+                    document.getElementById('appointmentDate').value = selectedDate;
+                }
+                if (modalElement === bpModal) {
+                     document.getElementById('bpDate').value = selectedDate;
+                     // Poner hora actual por defecto
+                     const now = new Date();
+                     document.getElementById('bpTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                }
+            }
+            modalElement.style.display = "block";
+        }
+
+        function closeModal(modalElement) {
+            modalElement.style.display = "none";
+            // Resetear formularios al cerrar (opcional, pero bueno para "Añadir")
+            if (modalElement === appointmentModal) {
+                appointmentForm.reset();
+                document.getElementById('appointmentId').value = ''; // Asegurar que el ID se limpia
+                document.getElementById('appointmentModalTitle').textContent = "Añadir Nueva Cita";
+            }
+            if (modalElement === bpModal) {
+                bpForm.reset();
+            }
+        }
+        
+        function openConfirmDeleteModal(message, onConfirm) {
+            document.getElementById('confirmDeleteMessage').textContent = message;
+            deleteFunction = onConfirm; // Guardar la función a ejecutar
+            openModal(confirmDeleteModal);
+        }
+
+        // --- Event Listeners ---
+        function setupEventListeners() {
+            prevMonthButton.addEventListener('click', () => {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                renderCalendar();
+            });
+
+            nextMonthButton.addEventListener('click', () => {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                renderCalendar();
+            });
+
+            newVerseButton.addEventListener('click', fetchBibleVerse);
+
+            // Abrir modales
+            openAddAppointmentModalButton.addEventListener('click', () => {
+                 document.getElementById('appointmentModalTitle').textContent = "Añadir Nueva Cita";
+                 document.getElementById('appointmentId').value = ''; // Limpiar ID para nueva cita
+                 appointmentForm.reset(); // Limpiar formulario
+                 if(selectedDate) document.getElementById('appointmentDate').value = selectedDate; // Poner fecha seleccionada
+                 const now = new Date();
+                 document.getElementById('appointmentTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                 openModal(appointmentModal);
+            });
+            openAddBPModalButton.addEventListener('click', () => {
+                bpForm.reset();
+                if(selectedDate) document.getElementById('bpDate').value = selectedDate;
+                const now = new Date();
+                document.getElementById('bpTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                openModal(bpModal);
+            });
+
+            // Cerrar modales
+            closeAppointmentModalButton.addEventListener('click', () => closeModal(appointmentModal));
+            cancelAppointmentButton.addEventListener('click', () => closeModal(appointmentModal));
+            closeBPModalButton.addEventListener('click', () => closeModal(bpModal));
+            cancelBPButton.addEventListener('click', () => closeModal(bpModal));
+            
+            // Confirmación de eliminación
+            cancelDeleteButton.addEventListener('click', () => {
+                closeModal(confirmDeleteModal);
+                deleteFunction = null; // Limpiar la función de eliminación
+            });
+            confirmDeleteButton.addEventListener('click', () => {
+                if (deleteFunction) {
+                    deleteFunction();
+                }
+                closeModal(confirmDeleteModal);
+                deleteFunction = null;
+            });
+
+
+            // Cierre de modal al hacer clic fuera
+            window.onclick = function(event) {
+                if (event.target == appointmentModal) {
+                    closeModal(appointmentModal);
+                }
+                if (event.target == bpModal) {
+                    closeModal(bpModal);
+                }
+                if (event.target == confirmDeleteModal) {
+                    closeModal(confirmDeleteModal);
+                    deleteFunction = null;
+                }
+            }
+
+            // Envío de formularios
+            appointmentForm.addEventListener('submit', saveAppointment);
+            bpForm.addEventListener('submit', saveBPReading);
+        }
+
+        // Iniciar la aplicación
+        initializeAppAuth();
+
+    </script>
+</body>
+</html>
