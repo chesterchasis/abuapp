@@ -7,222 +7,200 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-image: url('https://raw.githubusercontent.com/chesterchasis/abuapp/refs/heads/main/cielo.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            position: relative;
-        }
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.3); /* Capa semitransparente para mejorar legibilidad */
-            z-index: -1;
-        }
-        .main-container {
-            background-color: #ffffff; /* Fondo blanco para el contenido principal */
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin: 2rem auto;
-            max-width: 72rem; /* max-w-6xl */
-            position: relative;
-            z-index: 1;
-        }
-        .calendar-day {
-            min-height: 100px;
-            transition: background-color 0.3s;
-            background-color: #f9fafb; /* Fondo claro para los días */
-        }
-        .calendar-day:hover {
-            background-color: #e6eef5;
-        }
-        .calendar-day.has-appointment {
-            background-color: #cce0f5;
-            font-weight: bold;
-        }
-        .calendar-day.selected {
-            background-color: #a3c2e0;
-            border: 2px solid #5a7b9a;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.4);
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 10% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-        .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close-button:hover,
-        .close-button:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .btn-primary {
-            background-color: #3b82f6;
-            color: white;
-        }
-        .btn-primary:hover {
-            background-color: #2563eb;
-        }
-        .btn-secondary {
-            background-color: #e5e7eb;
-            color: #374151;
-        }
-        .btn-secondary:hover {
-            background-color: #d1d5db;
-        }
-        #loading-indicator {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5rem;
-            color: #333;
-        }
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border-left-color: #3b82f6;
-            animation: spin 1s ease infinite;
-            margin-right: 10px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, minmax(0, 1fr));
-            gap: 0.25rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            padding: 0.5rem;
-            background-color: #f9fafb;
-        }
-        .calendar-day {
-            aspect-ratio: 1/1;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            padding: 0.5rem;
-            font-size: 0.875rem;
-            cursor: pointer;
-            border-radius: 0.25rem;
-        }
-        @media (min-width: 640px) {
-            .calendar-day {
-                padding: 1rem;
-                font-size: 1rem;
-            }
-        }
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <style>
+        /* Estilos generales */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3 {
+    color: #444;
+}
+
+button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Calendario */
+#calendarGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.calendar-day {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.calendar-day:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.calendar-day.selected {
+    background-color: #007BFF;
+    color: white;
+    font-weight: bold;
+}
+
+/* COMENTARIO: Estilos para el versículo bíblico fueron simplificados o eliminados 
+   ya que ahora se aplican clases de Tailwind directamente en el HTML 
+   para su integración con la imagen de fondo. */
+
+#loading-indicator {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    color: #333;
+}
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border-left-color: #3b82f6; /* Azul */
+    animation: spin 1s ease infinite;
+    margin-right: 10px;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    #calendarGrid {
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    }
+
+    .calendar-day {
+        font-size: 0.9em;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    #calendarGrid {
+        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    }
+
+    .calendar-day {
+        font-size: 0.8em;
+        padding: 6px;
+    }
+}
     </style>
 </head>
 <body class="p-4 md:p-8">
+
     <div id="loading-indicator" class="flex items-center justify-center">
         <div class="spinner"></div>
         Cargando...
     </div>
 
-    <div class="relative z-10 p-6 md:p-10 text-center text-white">
-        <header class="mb-6">
-            <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-shadow-md">Calendario de Bienestar 👵🏼 </h1>
-            <p class="text-sm mt-2 text-shadow-sm">ID de Usuario: <span id="userIdDisplay" class="font-semibold"></span></p>
-        </header>
-        <div id="bibleVerseCard" class="p-4 bg-black bg-opacity-40 backdrop-blur-sm rounded-xl inline-block max-w-md sm:max-w-lg md:max-w-2xl mx-auto">
-            <div class="flex items-center justify-center">
-                <i class="fas fa-book-open text-2xl sm:text-3xl mr-3 sm:mr-4"></i>
-                <div>
-                    <p id="bibleVerseText" class="text-base sm:text-lg italic">"El Señor es mi pastor, nada me faltará."</p>
-                    <cite id="bibleVerseCite" class="block text-xs sm:text-sm opacity-90 mt-1">- Salmo 23:1</cite>
+    <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-xl">
+
+        <div class="relative rounded-lg overflow-hidden mb-8 shadow-lg">
+            <img src="https://raw.githubusercontent.com/chesterchasis/abuapp/refs/heads/main/cielo.png" 
+                 alt="Imagen de fondo inspiradora" 
+                 class="absolute inset-0 w-full h-full object-cover z-0 opacity-60" onerror="this.onerror=null; this.src='https://placehold.co/1200x400/e2e8f0/64748b?text=Imagen+No+Disponible';">
+            
+            <div class="relative z-10 p-6 md:p-10 text-center text-white">
+                <header class="mb-6">
+                    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-shadow-md">🗓️ Calendario de Bienestar 👵</h1>
+                    <p class="text-md sm:text-lg md:text-xl mt-2 text-shadow-sm">Organiza tus citas médicas y cuida tu salud.</p>
+                    <p class="text-sm mt-2 text-shadow-sm">ID de Usuario: <span id="userIdDisplay" class="font-semibold"></span></p>
+                </header>
+
+                <div id="bibleVerseCard" class="p-4 bg-black bg-opacity-40 backdrop-blur-sm rounded-xl inline-block max-w-md sm:max-w-lg md:max-w-2xl mx-auto">
+                    <div class="flex items-center justify-center">
+                        <i class="fas fa-book-open text-2xl sm:text-3xl mr-3 sm:mr-4"></i>
+                        <div>
+                            <p id="bibleVerseText" class="text-base sm:text-lg italic">"El Señor es mi pastor, nada me faltará."</p>
+                            <cite id="bibleVerseCite" class="block text-xs sm:text-sm opacity-90 mt-1">- Salmo 23:1</cite>
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </div>
+        <div class="flex flex-col gap-8">
+            <div> 
+                <section id="calendar-section" class="mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="prevMonth" class="px-3 py-2 sm:px-4 btn-secondary rounded-lg hover:bg-gray-300 text-sm sm:text-base"><i class="fas fa-chevron-left"></i> Mes Ant.</button>
+                        <h2 id="currentMonthYear" class="text-xl sm:text-2xl font-semibold text-blue-700 text-center mx-2"></h2>
+                        <button id="nextMonth" class="px-3 py-2 sm:px-4 btn-secondary rounded-lg hover:bg-gray-300 text-sm sm:text-base">Mes Sig. <i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-1 border border-gray-300 rounded-lg p-2 bg-gray-50">
+                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Dom</div>
+                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Lun</div>
+                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Mar</div>
+                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Mié</div>
+                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Jue</div>
+                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Vie</div>
+                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Sáb</div>
+                        </div>
+                </section>
+
+                <section id="selected-day-info" class="bg-blue-50 p-4 sm:p-6 rounded-lg shadow">
+                    <h3 class="text-lg sm:text-xl font-semibold text-blue-700 mb-3">Información para el <span id="selectedDateDisplay">Día Seleccionado</span></h3>
+                    <div id="appointmentsForDay" class="space-y-3">
+                        <p class="text-gray-600">Selecciona un día en el calendario para ver las citas.</p>
+                    </div>
+                     <button id="openAddAppointmentModalButton" class="mt-4 px-4 py-2 btn-primary rounded-lg w-full md:w-auto text-sm sm:text-base"><i class="fas fa-plus-circle mr-2"></i>Añadir Cita</button>
+                </section>
+            </div>
+
+            <div> 
+                <section id="blood-pressure-section" class="bg-sky-50 p-4 sm:p-6 rounded-lg shadow"> 
+                    <h3 class="text-lg sm:text-xl font-semibold text-sky-700 mb-4"><i class="fas fa-heartbeat mr-2"></i>Registro de Tensión Arterial</h3>
+                    <button id="openAddBPModalButton" class="w-full px-4 py-2 mb-4 bg-sky-500 text-white rounded-lg hover:bg-sky-600 text-sm sm:text-base"><i class="fas fa-plus-circle mr-2"></i>Añadir Toma de Tensión</button>
+                    <div id="bloodPressureLog" class="space-y-3 max-h-60 overflow-y-auto mb-6"> 
+                        <p class="text-gray-600">Aún no hay registros de tensión.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-md sm:text-lg font-semibold text-sky-700 mb-2">Evolución de la Tensión</h4>
+                        <canvas id="bpChart" class="rounded-lg"></canvas>
+                        <p id="bpChartMessage" class="text-sm text-gray-500 mt-2 text-center"></p>
+                    </div>
+                </section>
             </div>
         </div>
     </div>
 
-    <div class="main-container">
-        <section id="calendar-section" class="mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <button id="prevMonth" class="px-3 py-2 sm:px-4 btn-secondary rounded-lg hover:bg-gray-300 text-sm sm:text-base"><i class="fas fa-chevron-left"></i> Mes Ant.</button>
-                <h2 id="currentMonthYear" class="text-xl sm:text-2xl font-semibold text-blue-700 text-center mx-2"></h2>
-                <button id="nextMonth" class="px-3 py-2 sm:px-4 btn-secondary rounded-lg hover:bg-gray-300 text-sm sm:text-base">Mes Sig. <i class="fas fa-chevron-right"></i></button>
-            </div>
-            <div id="calendarGrid" class="calendar-grid">
-                <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Dom</div>
-                <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Lun</div>
-                <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Mar</div>
-                <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Mié</div>
-                <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Jue</div>
-                <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Vie</div>
-                <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Sáb</div>
-            </div>
-        </section>
-
-        <section id="selected-day-info" class="bg-blue-50 p-4 sm:p-6 rounded-lg shadow">
-            <h3 class="text-lg sm:text-xl font-semibold text-blue-700 mb-3">Información para el <span id="selectedDateDisplay">Día Seleccionado</span></h3>
-            <div id="appointmentsForDay" class="space-y-3">
-                <p class="text-gray-600">Selecciona un día en el calendario para ver las citas.</p>
-            </div>
-            <button id="openAddAppointmentModalButton" class="mt-4 px-4 py-2 btn-primary rounded-lg w-full md:w-auto text-sm sm:text-base"><i class="fas fa-plus-circle mr-2"></i>Añadir Cita</button>
-        </section>
-
-        <section id="blood-pressure-section" class="bg-sky-50 p-4 sm:p-6 rounded-lg shadow mt-8">
-            <h3 class="text-lg sm:text-xl font-semibold text-sky-700 mb-4"><i class="fas fa-heartbeat mr-2"></i>Registro de Tensión Arterial</h3>
-            <button id="openAddBPModalButton" class="w-full px-4 py-2 mb-4 bg-sky-500 text-white rounded-lg hover:bg-sky-600 text-sm sm:text-base"><i class="fas fa-plus-circle mr-2"></i>Añadir Toma de Tensión</button>
-            <div id="bloodPressureLog" class="space-y-3 max-h-60 overflow-y-auto mb-6">
-                <p class="text-gray-600">Aún no hay registros de tensión.</p>
-            </div>
-            <div>
-                <h4 class="text-md sm:text-lg font-semibold text-sky-700 mb-2">Evolución de la Tensión</h4>
-                <canvas id="bpChart" class="rounded-lg"></canvas>
-                <p id="bpChartMessage" class="text-sm text-gray-500 mt-2 text-center"></p>
-            </div>
-        </section>
-    </div>
-
     <div id="appointmentModal" class="modal">
         <div class="modal-content">
-            <span class="close-button" id="closeAppointmentModal">×</span>
+            <span class="close-button" id="closeAppointmentModal">&times;</span>
             <h3 id="appointmentModalTitle" class="text-xl sm:text-2xl font-semibold mb-4 text-blue-700">Añadir Nueva Cita</h3>
             <form id="appointmentForm">
                 <input type="hidden" id="appointmentId">
@@ -259,7 +237,7 @@
 
     <div id="bpModal" class="modal">
         <div class="modal-content">
-            <span class="close-button" id="closeBPModal">×</span>
+            <span class="close-button" id="closeBPModal">&times;</span>
             <h3 class="text-xl sm:text-2xl font-semibold mb-4 text-sky-700">Añadir Toma de Tensión</h3>
             <form id="bpForm">
                 <div class="mb-4">
@@ -289,7 +267,7 @@
                     <textarea id="bpNotes" name="bpNotes" rows="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"></textarea>
                 </div>
                 <div class="flex justify-end space-x-3">
-                    <button type="button" id="cancelBP" class="px-4 py-2 btn-secondary rounded-lg text-sm sm:text-base">Cancelar</button>
+                     <button type="button" id="cancelBP" class="px-4 py-2 btn-secondary rounded-lg text-sm sm:text-base">Cancelar</button>
                     <button type="submit" class="px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 text-sm sm:text-base">Guardar Toma</button>
                 </div>
             </form>
@@ -307,6 +285,7 @@
         </div>
     </div>
 
+
     <script type="module">
         // Importaciones de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -322,22 +301,22 @@
             storageBucket: "abuapp-ed946.firebasestorage.app",
             messagingSenderId: "144970687143",
             appId: "1:144970687143:web:35ad5f75b89af8d2c4f182"
-        };
+            };
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'calendario-bienestar-default';
 
         // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        setLogLevel('debug');
+        setLogLevel('debug'); 
 
         // Variables globales
         let currentYear, currentMonth;
-        let selectedDate = null;
+        let selectedDate = null; 
         let userId = null;
-        let appointments = [];
-        let bloodPressureReadings = [];
-        let bpChartInstance = null;
+        let appointments = []; 
+        let bloodPressureReadings = []; 
+        let bpChartInstance = null; 
 
         // Elementos del DOM
         const calendarGrid = document.getElementById('calendarGrid');
@@ -348,11 +327,12 @@
         const appointmentsForDay = document.getElementById('appointmentsForDay');
         const bloodPressureLog = document.getElementById('bloodPressureLog');
         const bibleVerseText = document.getElementById('bibleVerseText');
-        const bibleVerseCite = document.getElementById('bibleVerseCite');
+        const bibleVerseCite = document.getElementById('bibleVerseCite'); 
         const userIdDisplay = document.getElementById('userIdDisplay');
         const loadingIndicator = document.getElementById('loading-indicator');
         const bpChartCanvas = document.getElementById('bpChart');
         const bpChartMessage = document.getElementById('bpChartMessage');
+
 
         // Modales
         const appointmentModal = document.getElementById('appointmentModal');
@@ -365,7 +345,7 @@
         // Botones de abrir modal
         const openAddAppointmentModalButton = document.getElementById('openAddAppointmentModalButton');
         const openAddBPModalButton = document.getElementById('openAddBPModalButton');
-
+        
         // Botones de cerrar modal
         const closeAppointmentModalButton = document.getElementById('closeAppointmentModal');
         const closeBPModalButton = document.getElementById('closeBPModal');
@@ -375,13 +355,13 @@
         // Botones de confirmación de eliminación
         const cancelDeleteButton = document.getElementById('cancelDeleteButton');
         const confirmDeleteButton = document.getElementById('confirmDeleteButton');
-        let deleteFunction = null;
+        let deleteFunction = null; 
 
         // --- Autenticación y Carga Inicial ---
         async function initializeAppAuth() {
             showLoading("Autenticando...");
             try {
-                await setPersistence(auth, browserLocalPersistence);
+                await setPersistence(auth, browserLocalPersistence); 
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     console.log("Intentando signInWithCustomToken...");
                     await signInWithCustomToken(auth, __initial_auth_token);
@@ -407,29 +387,27 @@
                 }
             });
         }
-
+        
         async function loadInitialData() {
             if (!userId) return;
             showLoading("Cargando datos...");
             const today = new Date();
             currentYear = today.getFullYear();
-            currentMonth = today.getMonth();
-            selectedDate = today.toISOString().split('T')[0];
+            currentMonth = today.getMonth(); 
+            selectedDate = today.toISOString().split('T')[0]; 
 
             await fetchBibleVerse();
             setupEventListeners();
-
+            
             subscribeToAppointments();
             subscribeToBloodPressureReadings();
-            hideLoading();
+            hideLoading(); 
         }
 
         function showLoading(message = "Cargando...") {
-            const loadingTextElement = loadingIndicator.querySelector('div:not(.spinner) + div');
+            const loadingTextElement = loadingIndicator.querySelector('div:not(.spinner)');
             if (loadingTextElement) {
-                loadingTextElement.textContent = message;
-            } else {
-                loadingIndicator.lastChild.textContent = message;
+                 loadingTextElement.textContent = message;
             }
             loadingIndicator.style.display = 'flex';
         }
@@ -440,31 +418,28 @@
 
         // --- Calendario ---
         function renderCalendar() {
-            if (!userId) return;
+            if (!userId) return; 
             showLoading("Actualizando calendario...");
+            // Limpiar calendario excepto cabeceras de días de la semana
+            const dayCellsContainer = calendarGrid.querySelectorAll('.calendar-day, div:empty');
+            dayCellsContainer.forEach(cell => cell.remove());
 
-            // Limpiar días del calendario, manteniendo las cabeceras
-            const dayCells = calendarGrid.querySelectorAll('.calendar-day, div:not(.text-center)');
-            dayCells.forEach(cell => cell.remove());
 
             const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
             const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
             const daysInMonth = lastDayOfMonth.getDate();
-            const startDayOfWeek = firstDayOfMonth.getDay();
-            const totalCells = Math.ceil((daysInMonth + startDayOfWeek) / 7) * 7;
+            const startDayOfWeek = firstDayOfMonth.getDay(); 
 
             currentMonthYearDisplay.textContent = `${firstDayOfMonth.toLocaleString('es-ES', { month: 'long' })} ${currentYear}`;
 
-            // Añadir celdas vacías al inicio
             for (let i = 0; i < startDayOfWeek; i++) {
                 const emptyCell = document.createElement('div');
                 calendarGrid.appendChild(emptyCell);
             }
 
-            // Añadir días del mes
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayCell = document.createElement('div');
-                dayCell.classList.add('calendar-day', 'border', 'border-gray-200', 'text-center', 'cursor-pointer', 'rounded');
+                dayCell.classList.add('calendar-day', 'p-1', 'sm:p-2', 'border', 'border-gray-200', 'text-center', 'cursor-pointer', 'rounded', 'text-xs', 'sm:text-sm');
                 dayCell.textContent = day;
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 dayCell.dataset.date = dateStr;
@@ -478,29 +453,20 @@
 
                 dayCell.addEventListener('click', () => {
                     selectedDate = dateStr;
-                    renderCalendar();
+                    renderCalendar(); 
                     renderAppointmentsForDay();
                     updateSelectedDateDisplay();
                 });
                 calendarGrid.appendChild(dayCell);
             }
-
-            // Añadir celdas vacías al final para completar la última semana
-            const filledCells = startDayOfWeek + daysInMonth;
-            const remainingCells = totalCells - filledCells;
-            for (let i = 0; i < remainingCells; i++) {
-                const emptyCell = document.createElement('div');
-                calendarGrid.appendChild(emptyCell);
-            }
-
             updateSelectedDateDisplay();
-            renderAppointmentsForDay();
+            renderAppointmentsForDay(); 
             hideLoading();
         }
 
         function updateSelectedDateDisplay() {
             if (selectedDate) {
-                const dateObj = new Date(selectedDate + 'T00:00:00');
+                const dateObj = new Date(selectedDate + 'T00:00:00'); 
                 selectedDateDisplay.textContent = dateObj.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             } else {
                 selectedDateDisplay.textContent = "Ningún día seleccionado";
@@ -511,7 +477,7 @@
         function subscribeToAppointments() {
             if (!userId) return;
             const appointmentsCol = collection(db, `artifacts/${appId}/users/${userId}/appointments`);
-            const q = query(appointmentsCol);
+            const q = query(appointmentsCol); 
 
             onSnapshot(q, (snapshot) => {
                 showLoading("Actualizando citas...");
@@ -522,8 +488,8 @@
                     return dateA - dateB;
                 });
                 console.log("Citas actualizadas desde Firestore:", appointments);
-                renderCalendar();
-                renderAppointmentsForDay();
+                renderCalendar(); 
+                renderAppointmentsForDay(); 
                 hideLoading();
             }, (error) => {
                 console.error("Error al suscribirse a las citas:", error);
@@ -538,7 +504,7 @@
             }
 
             const dayAppointments = appointments.filter(app => app.date === selectedDate);
-
+            
             if (dayAppointments.length === 0) {
                 appointmentsForDay.innerHTML = '<p class="text-gray-600 text-sm sm:text-base">No hay citas para este día.</p>';
                 return;
@@ -567,11 +533,11 @@
                 button.addEventListener('click', (e) => handleDeleteAppointment(e.currentTarget.dataset.id));
             });
         }
-
-        function getAppointmentColor(type) {
+        
+        function getAppointmentColor(type) { 
             switch (type) {
                 case 'Hospital': return 'border-red-500';
-                case 'Médico de Cabecera': return 'border-blue-500';
+                case 'Médico de Cabecera': return 'border-blue-500'; 
                 case 'Cirujano': return 'border-purple-500';
                 case 'Endocrino': return 'border-yellow-500';
                 case 'Enfermera (Tensión)': return 'border-teal-500';
@@ -598,11 +564,11 @@
 
             try {
                 const appointmentCollectionPath = `artifacts/${appId}/users/${userId}/appointments`;
-                if (id) {
+                if (id) { 
                     const appointmentRef = doc(db, appointmentCollectionPath, id);
                     await updateDoc(appointmentRef, appointmentData);
                     console.log("Cita actualizada con ID: ", id);
-                } else {
+                } else { 
                     await addDoc(collection(db, appointmentCollectionPath), appointmentData);
                     console.log("Nueva cita añadida");
                 }
@@ -648,7 +614,7 @@
         function subscribeToBloodPressureReadings() {
             if (!userId) return;
             const bpCol = collection(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`);
-            const q = query(bpCol);
+            const q = query(bpCol); 
 
             onSnapshot(q, (snapshot) => {
                 showLoading("Actualizando lecturas de tensión...");
@@ -656,11 +622,11 @@
                 bloodPressureReadings.sort((a, b) => {
                     const dateA = new Date(`${a.date}T${a.time || '00:00'}`);
                     const dateB = new Date(`${b.date}T${b.time || '00:00'}`);
-                    return dateA - dateB;
+                    return dateA - dateB; 
                 });
                 console.log("Lecturas de tensión actualizadas:", bloodPressureReadings);
                 renderBloodPressureLog();
-                renderBPChart();
+                renderBPChart(); 
                 hideLoading();
             }, (error) => {
                 console.error("Error al suscribirse a las lecturas de tensión:", error);
@@ -670,10 +636,10 @@
 
         function renderBloodPressureLog() {
             if (!userId) {
-                bloodPressureLog.innerHTML = '<p class="text-gray-600 text-sm sm:text-base">Debes estar autenticado para ver el registro.</p>';
+                 bloodPressureLog.innerHTML = '<p class="text-gray-600 text-sm sm:text-base">Debes estar autenticado para ver el registro.</p>';
                 return;
             }
-            const reversedReadings = [...bloodPressureReadings].reverse();
+            const reversedReadings = [...bloodPressureReadings].reverse(); 
 
             if (reversedReadings.length === 0) {
                 bloodPressureLog.innerHTML = '<p class="text-gray-600 text-sm sm:text-base">Aún no hay registros de tensión.</p>';
@@ -681,7 +647,7 @@
             }
 
             bloodPressureLog.innerHTML = reversedReadings.map(bp => {
-                const bpDate = new Date(bp.date + 'T' + (bp.time || '00:00:00'));
+                const bpDate = new Date(bp.date + 'T' + (bp.time || '00:00:00')); 
                 return `
                 <div class="p-3 bg-white rounded-md shadow border-l-4 border-sky-500">
                     <div class="flex justify-between items-start">
@@ -694,7 +660,7 @@
                     </div>
                 </div>
             `}).join('');
-
+            
             bloodPressureLog.querySelectorAll('.delete-bp').forEach(button => {
                 button.addEventListener('click', (e) => handleDeleteBPReading(e.currentTarget.dataset.id));
             });
@@ -705,16 +671,17 @@
             const ctx = bpChartCanvas.getContext('2d');
 
             if (bpChartInstance) {
-                bpChartInstance.destroy();
+                bpChartInstance.destroy(); 
             }
 
             if (bloodPressureReadings.length === 0) {
                 bpChartMessage.textContent = "No hay suficientes datos para mostrar el gráfico.";
-                bpChartCanvas.style.display = 'none';
+                bpChartCanvas.style.display = 'none'; 
                 return;
             }
-            bpChartCanvas.style.display = 'block';
+            bpChartCanvas.style.display = 'block'; 
             bpChartMessage.textContent = "";
+
 
             const labels = bloodPressureReadings.map(bp => {
                 const date = new Date(bp.date + 'T' + (bp.time || "00:00"));
@@ -724,21 +691,21 @@
             const diastolicData = bloodPressureReadings.map(bp => bp.diastolic);
 
             bpChartInstance = new Chart(ctx, {
-                type: 'bar',
+                type: 'bar', 
                 data: {
                     labels: labels,
                     datasets: [
                         {
                             label: 'Sistólica (Alta)',
                             data: systolicData,
-                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                            borderColor: 'rgba(149, 163, 246, 1)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)', 
+                            borderColor: 'rgba(59, 130, 246, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Diastólica (Baja)',
                             data: diastolicData,
-                            backgroundColor: 'rgba(14, 165, 233, 0.7)',
+                            backgroundColor: 'rgba(14, 165, 233, 0.7)', 
                             borderColor: 'rgba(14, 165, 233, 1)',
                             borderWidth: 1
                         }
@@ -746,17 +713,17 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true, 
                     scales: {
                         y: {
-                            beginAtZero: false,
+                            beginAtZero: false, 
                             title: {
                                 display: true,
                                 text: 'Presión (mmHg)'
                             }
                         },
                         x: {
-                            title: {
+                             title: {
                                 display: true,
                                 text: 'Fecha de Toma'
                             }
@@ -774,6 +741,7 @@
                 }
             });
         }
+
 
         async function saveBPReading(e) {
             e.preventDefault();
@@ -806,7 +774,7 @@
         }
 
         function handleDeleteBPReading(id) {
-            openConfirmDeleteModal("¿Estás seguro de que quieres eliminar esta toma de tensión?", async () => {
+             openConfirmDeleteModal("¿Estás seguro de que quieres eliminar esta toma de tensión?", async () => {
                 if (!userId) return;
                 showLoading("Eliminando lectura...");
                 try {
@@ -829,7 +797,7 @@
             const prompt = "Proporciona un único versículo bíblico edificante y corto en español, seguido únicamente por su cita entre paréntesis (Libro Capítulo:Versículo). No incluyas ninguna frase introductoria como 'Claro, aquí tienes...' o similar. Ejemplo: Porque de tal manera amó Dios al mundo... (Juan 3:16)";
             let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
             const payload = { contents: chatHistory };
-            const apiKey = "";
+            const apiKey = ""; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
             try {
@@ -846,14 +814,14 @@
                     result.candidates[0].content && result.candidates[0].content.parts &&
                     result.candidates[0].content.parts.length > 0) {
                     let fullText = result.candidates[0].content.parts[0].text;
-
-                    const match = fullText.match(/(.*)\s*\(([^)]+)\)$/);
+                    
+                    const match = fullText.match(/(.*)\s*\(([^)]+)\)$/); 
                     if (match && match[1] && match[2]) {
                         bibleVerseText.textContent = match[1].trim();
                         bibleVerseCite.textContent = `(${match[2].trim()})`;
                     } else {
                         bibleVerseText.textContent = fullText;
-                        bibleVerseCite.textContent = "";
+                        bibleVerseCite.textContent = ""; 
                         console.warn("No se pudo extraer la cita del versículo:", fullText);
                     }
                 } else {
@@ -873,13 +841,13 @@
         // --- Modales ---
         function openModal(modalElement) {
             if (selectedDate) {
-                if (modalElement === appointmentModal && !document.getElementById('appointmentId').value) {
+                if (modalElement === appointmentModal && !document.getElementById('appointmentId').value) { 
                     document.getElementById('appointmentDate').value = selectedDate;
                 }
                 if (modalElement === bpModal) {
-                    document.getElementById('bpDate').value = selectedDate;
-                    const now = new Date();
-                    document.getElementById('bpTime').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                     document.getElementById('bpDate').value = selectedDate;
+                     const now = new Date();
+                     document.getElementById('bpTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
                 }
             }
             modalElement.style.display = "block";
@@ -889,17 +857,17 @@
             modalElement.style.display = "none";
             if (modalElement === appointmentModal) {
                 appointmentForm.reset();
-                document.getElementById('appointmentId').value = '';
+                document.getElementById('appointmentId').value = ''; 
                 document.getElementById('appointmentModalTitle').textContent = "Añadir Nueva Cita";
             }
             if (modalElement === bpModal) {
                 bpForm.reset();
             }
         }
-
+        
         function openConfirmDeleteModal(message, onConfirm) {
             document.getElementById('confirmDeleteMessage').textContent = message;
-            deleteFunction = onConfirm;
+            deleteFunction = onConfirm; 
             openModal(confirmDeleteModal);
         }
 
@@ -923,21 +891,21 @@
                 renderCalendar();
             });
 
-            openAddAppointmentModalButton.addEventListener('click', () => {
-                document.getElementById('appointmentModalTitle').textContent = "Añadir Nueva Cita";
-                document.getElementById('appointmentId').value = '';
-                appointmentForm.reset();
-                if (selectedDate) document.getElementById('appointmentDate').value = selectedDate;
-                const now = new Date();
-                document.getElementById('appointmentTime').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                openModal(appointmentModal);
-            });
 
+            openAddAppointmentModalButton.addEventListener('click', () => {
+                 document.getElementById('appointmentModalTitle').textContent = "Añadir Nueva Cita";
+                 document.getElementById('appointmentId').value = ''; 
+                 appointmentForm.reset(); 
+                 if(selectedDate) document.getElementById('appointmentDate').value = selectedDate; 
+                 const now = new Date();
+                 document.getElementById('appointmentTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                 openModal(appointmentModal);
+            });
             openAddBPModalButton.addEventListener('click', () => {
                 bpForm.reset();
-                if (selectedDate) document.getElementById('bpDate').value = selectedDate;
+                if(selectedDate) document.getElementById('bpDate').value = selectedDate;
                 const now = new Date();
-                document.getElementById('bpTime').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                document.getElementById('bpTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
                 openModal(bpModal);
             });
 
@@ -945,10 +913,10 @@
             cancelAppointmentButton.addEventListener('click', () => closeModal(appointmentModal));
             closeBPModalButton.addEventListener('click', () => closeModal(bpModal));
             cancelBPButton.addEventListener('click', () => closeModal(bpModal));
-
+            
             cancelDeleteButton.addEventListener('click', () => {
                 closeModal(confirmDeleteModal);
-                deleteFunction = null;
+                deleteFunction = null; 
             });
             confirmDeleteButton.addEventListener('click', () => {
                 if (deleteFunction) {
@@ -958,18 +926,18 @@
                 deleteFunction = null;
             });
 
-            window.addEventListener('click', (event) => {
-                if (event.target === appointmentModal) {
+            window.onclick = function(event) {
+                if (event.target == appointmentModal) {
                     closeModal(appointmentModal);
                 }
-                if (event.target === bpModal) {
+                if (event.target == bpModal) {
                     closeModal(bpModal);
                 }
-                if (event.target === confirmDeleteModal) {
+                if (event.target == confirmDeleteModal) {
                     closeModal(confirmDeleteModal);
                     deleteFunction = null;
                 }
-            });
+            }
 
             appointmentForm.addEventListener('submit', saveAppointment);
             bpForm.addEventListener('submit', saveBPReading);
@@ -977,6 +945,7 @@
 
         // Iniciar la aplicación
         initializeAppAuth();
+
     </script>
 </body>
 </html>
