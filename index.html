@@ -7,208 +7,236 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <style>
-        /* Estilos generales */
-body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #f9f9f9;
-    color: #333;
-    margin: 0;
-    padding: 0;
-}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Fondo de página con imagen y degradado superpuesto */
+            background-image: linear-gradient(to bottom, rgba(173, 216, 230, 0.4), rgba(224, 231, 255, 0.7)), url('https://raw.githubusercontent.com/chesterchasis/abuapp/refs/heads/main/cielo.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* Fondo fijo al hacer scroll */
+            color: #1f2937; /* Tailwind gray-800 para mejor contraste */
+            margin: 0;
+            min-height: 100vh;
+        }
 
-h1, h2, h3 {
-    color: #444;
-}
+        /* Estilos para el indicador de carga */
+        #loading-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1rem;
+        }
 
-button {
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 10px 15px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #007BFF; /* Azul primario */
+            animation: spin 1s ease infinite;
+        }
 
-button:hover {
-    background-color: #0056b3;
-}
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
 
-/* Calendario */
-#calendarGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 10px;
-    margin: 20px 0;
-}
+        /* Estilos para los Modales */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6); /* Un poco más oscuro para mejor contraste del modal */
+            align-items: center;
+            justify-content: center;
+        }
 
-.calendar-day {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 10px;
-    text-align: center;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #b0bec5; /* Tailwind blue-gray-300 */
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
 
-.calendar-day:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+        .close-button {
+            color: #757575; /* Gris más oscuro */
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
 
-.calendar-day.selected {
-    background-color: #007BFF;
-    color: white;
-    font-weight: bold;
-}
+        .close-button:hover,
+        .close-button:focus {
+            color: #212121; /* Negro */
+            text-decoration: none;
+            cursor: pointer;
+        }
 
-.calendar-day.has-appointment {
-    background-color: #e0f7ff;
-    border-color: #007BFF;
-}
+        /* Estilos para el Calendario */
+        .calendar-day {
+            position: relative;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
 
-/* COMENTARIO: Estilos para el versículo bíblico fueron simplificados o eliminados 
-   ya que ahora se aplican clases de Tailwind directamente en el HTML 
-   para su integración con la imagen de fondo. */
+        #calendarGrid .calendar-day.selected {
+            background-color: #1d4ed8; /* Tailwind blue-700 (más oscuro para selección) */
+            color: white !important;
+            font-weight: bold;
+            transform: scale(1.05); /* Pequeño efecto al seleccionar */
+        }
 
-#loading-indicator {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.5rem;
-    color: #333;
-}
-.spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border-left-color: #3b82f6; /* Azul */
-    animation: spin 1s ease infinite;
-    margin-right: 10px;
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+        #calendarGrid .calendar-day.has-appointment::after {
+            content: '';
+            position: absolute;
+            bottom: 4px; /* Ajustar posición vertical del punto */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 7px; /* Punto un poco más grande */
+            height: 7px;
+            background-color: #c53030; /* Tailwind red-700 (más oscuro) */
+            border-radius: 50%;
+            border: 1px solid white; /* Borde blanco para el punto */
+        }
 
-/* Responsividad */
-@media (max-width: 768px) {
-    #calendarGrid {
-        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    }
+        #calendarGrid .calendar-day.today {
+            font-weight: bold;
+            color: #0ea5e9; /* Tailwind sky-500 */
+            border: 1px solid #0ea5e9; /* Borde para el día de hoy */
+        }
+        #calendarGrid .calendar-day.today:not(.selected):hover {
+            background-color: #e0f2fe; /* Tailwind sky-100 */
+        }
 
-    .calendar-day {
-        font-size: 0.9em;
-        padding: 8px;
-    }
-}
+        /* Estilo para fines de semana */
+        #calendarGrid .calendar-day.weekend-day:not(.selected) {
+            background-color: #f0f9ff; /* Tailwind sky-50 (muy claro) */
+            color: #374151; /* Tailwind gray-700 */
+        }
+        #calendarGrid .calendar-day.weekend-day:not(.selected):hover {
+            background-color: #e0f2fe; /* Tailwind sky-100 */
+        }
 
-@media (max-width: 480px) {
-    #calendarGrid {
-        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-    }
 
-    .calendar-day {
-        font-size: 0.8em;
-        padding: 6px;
-    }
-}
+        .text-shadow-md {
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .text-shadow-sm {
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .btn-primary {
+            background-color: #007BFF;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
 
-#bibleVerseText {
-    font-style: italic;
-    font-size: 1.2em;
-    color: #333;
-}
-
-#bibleVerseCite {
-    font-size: 0.9em;
-    color: #555;
-    margin-top: 5px;
-}
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <div id="loading-indicator" class="flex items-center justify-center">
-        <div class="spinner"></div>
-        Cargando...
+    <div id="loading-indicator" class="hidden"> <div class="spinner"></div>
+        <div class="text-lg font-semibold text-gray-700">Cargando...</div>
     </div>
 
-    <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-xl">
+    <div class="max-w-6xl mx-auto bg-white/90 backdrop-blur-sm p-4 sm:p-6 rounded-xl shadow-2xl">
 
-        <div class="relative rounded-lg overflow-hidden mb-8 shadow-lg">
-            <img src="https://raw.githubusercontent.com/chesterchasis/abuapp/refs/heads/main/cielo.png" 
-                 alt="Imagen de fondo inspiradora" 
-                 class="absolute inset-0 w-full h-full object-cover z-0 opacity-60" onerror="this.onerror=null; this.src='https://placehold.co/1200x400/e2e8f0/64748b?text=Imagen+No+Disponible';">
-            
-            <div class="relative z-10 p-6 md:p-10 text-center text-white">
-                <header class="mb-6">
-                    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-shadow-md">🗓️ Calendario de Bienestar 👵</h1>
-                    <p class="text-md sm:text-lg md:text-xl mt-2 text-shadow-sm">Organiza tus citas médicas y cuida tu salud.</p>
-                    <p class="text-sm mt-2 text-shadow-sm">ID de Usuario: <span id="userIdDisplay" class="font-semibold"></span></p>
-                </header>
+        <div class="relative text-center mb-8 pt-8 pb-4">
+             <header class="mb-6">
+                <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-800 text-shadow-sm">🗓️ Calendario de Bienestar 👵</h1>
+                <p class="text-md sm:text-lg md:text-xl mt-2 text-slate-700 text-shadow-sm">Organiza tus citas médicas y cuida tu salud.</p>
+                <p class="text-sm mt-2 text-slate-600">ID de Usuario: <span id="userIdDisplay" class="font-semibold">Cargando...</span></p>
+            </header>
 
-                <div id="bibleVerseCard" class="p-4 bg-black bg-opacity-40 backdrop-blur-sm rounded-xl inline-block max-w-md sm:max-w-lg md:max-w-2xl mx-auto">
-                    <div class="flex items-center justify-center">
-                        <i class="fas fa-book-open text-2xl sm:text-3xl mr-3 sm:mr-4"></i>
-                        <div>
-                            <p id="bibleVerseText" class="text-base sm:text-lg italic">"El Señor es mi pastor, nada me faltará."</p>
-                            <cite id="bibleVerseCite" class="block text-xs sm:text-sm opacity-90 mt-1">- Salmo 23:1</cite>
-                        </div>
+            <div id="bibleVerseCard" class="p-4 bg-black/60 backdrop-blur-md rounded-xl inline-block max-w-md sm:max-w-lg md:max-w-2xl mx-auto text-white">
+                <div class="flex items-center justify-center">
+                    <i class="fas fa-book-open text-2xl sm:text-3xl mr-3 sm:mr-4"></i>
+                    <div>
+                        <p id="bibleVerseText" class="text-base sm:text-lg italic">"El Señor es mi pastor, nada me faltará."</p>
+                        <cite id="bibleVerseCite" class="block text-xs sm:text-sm opacity-90 mt-1">- Salmo 23:1</cite>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="flex flex-col gap-8">
-            <div> 
-                <section id="calendar-section" class="mb-8">
-                    <div class="flex justify-between items-center mb-4">
-                        <button id="prevMonth" class="px-3 py-2 sm:px-4 btn-secondary rounded-lg hover:bg-gray-300 text-sm sm:text-base"><i class="fas fa-chevron-left"></i> Mes Ant.</button>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+            <div>
+                <section id="calendar-section" class="mb-8 p-4 sm:p-6 bg-slate-50/80 backdrop-blur-sm rounded-lg shadow-lg">
+                    <div class="flex justify-between items-center mb-6">
+                        <button id="prevMonth" class="px-3 py-2 sm:px-4 btn-secondary rounded-lg hover:bg-slate-300 text-sm sm:text-base shadow hover:shadow-md transition-all"><i class="fas fa-chevron-left"></i> Mes Ant.</button>
                         <h2 id="currentMonthYear" class="text-xl sm:text-2xl font-semibold text-blue-700 text-center mx-2"></h2>
-                        <button id="nextMonth" class="px-3 py-2 sm:px-4 btn-secondary rounded-lg hover:bg-gray-300 text-sm sm:text-base">Mes Sig. <i class="fas fa-chevron-right"></i></button>
+                        <button id="nextMonth" class="px-3 py-2 sm:px-4 btn-secondary rounded-lg hover:bg-slate-300 text-sm sm:text-base shadow hover:shadow-md transition-all">Mes Sig. <i class="fas fa-chevron-right"></i></button>
                     </div>
-                    <div id="calendarGrid" class="grid grid-cols-7 gap-1 border border-gray-300 rounded-lg p-2 bg-gray-50">
-                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Dom</div>
-                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Lun</div>
-                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Mar</div>
-                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Mié</div>
-                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Jue</div>
-                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Vie</div>
-                        <div class="text-center font-semibold text-gray-700 py-2 text-xs sm:text-sm">Sáb</div>
-                        </div>
+                    <div id="calendarGridHeader" class="grid grid-cols-7 gap-1 border-b border-slate-300 pb-2 mb-2">
+                        <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Lun</div>
+                        <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Mar</div>
+                        <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Mié</div>
+                        <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Jue</div>
+                        <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Vie</div>
+                        <div class="text-center font-semibold text-sky-600 py-2 text-xs sm:text-sm">Sáb</div> {/* Color para cabecera Sábado */}
+                        <div class="text-center font-semibold text-sky-600 py-2 text-xs sm:text-sm">Dom</div> {/* Color para cabecera Domingo */}
+                    </div>
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 p-1">
+                        {/* Los días del calendario se generan aquí */}
+                    </div>
                 </section>
 
-                <section id="selected-day-info" class="bg-blue-50 p-4 sm:p-6 rounded-lg shadow">
+                <section id="selected-day-info" class="bg-blue-50/80 backdrop-blur-sm p-4 sm:p-6 rounded-lg shadow-lg">
                     <h3 class="text-lg sm:text-xl font-semibold text-blue-700 mb-3">Información para el <span id="selectedDateDisplay">Día Seleccionado</span></h3>
-                    <div id="appointmentsForDay" class="space-y-3">
-                        <p class="text-gray-600">Selecciona un día en el calendario para ver las citas.</p>
+                    <div id="appointmentsForDay" class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                        <p class="text-slate-600">Selecciona un día en el calendario para ver las citas.</p>
                     </div>
-                     <button id="openAddAppointmentModalButton" class="mt-4 px-4 py-2 btn-primary rounded-lg w-full md:w-auto text-sm sm:text-base"><i class="fas fa-plus-circle mr-2"></i>Añadir Cita</button>
+                     <button id="openAddAppointmentModalButton" class="mt-4 px-4 py-2 btn-primary rounded-lg w-full md:w-auto text-sm sm:text-base shadow hover:shadow-md transition-all"><i class="fas fa-plus-circle mr-2"></i>Añadir Cita</button>
                 </section>
             </div>
 
-            <div> 
-                <section id="blood-pressure-section" class="bg-sky-50 p-4 sm:p-6 rounded-lg shadow"> 
+            <div>
+                <section id="blood-pressure-section" class="bg-sky-50/80 backdrop-blur-sm p-4 sm:p-6 rounded-lg shadow-lg">
                     <h3 class="text-lg sm:text-xl font-semibold text-sky-700 mb-4"><i class="fas fa-heartbeat mr-2"></i>Registro de Tensión Arterial</h3>
-                    <button id="openAddBPModalButton" class="w-full px-4 py-2 mb-4 bg-sky-500 text-white rounded-lg hover:bg-sky-600 text-sm sm:text-base"><i class="fas fa-plus-circle mr-2"></i>Añadir Toma de Tensión</button>
-                    <div id="bloodPressureLog" class="space-y-3 max-h-60 overflow-y-auto mb-6"> 
-                        <p class="text-gray-600">Aún no hay registros de tensión.</p>
+                    <button id="openAddBPModalButton" class="w-full px-4 py-2 mb-4 bg-sky-500 text-white rounded-lg hover:bg-sky-600 text-sm sm:text-base shadow hover:shadow-md transition-all"><i class="fas fa-plus-circle mr-2"></i>Añadir Toma de Tensión</button>
+                    <div id="bloodPressureLog" class="space-y-3 max-h-60 overflow-y-auto mb-6 pr-2">
+                        <p class="text-slate-600">Aún no hay registros de tensión.</p>
                     </div>
                     <div>
                         <h4 class="text-md sm:text-lg font-semibold text-sky-700 mb-2">Evolución de la Tensión</h4>
-                        <canvas id="bpChart" class="rounded-lg"></canvas>
-                        <p id="bpChartMessage" class="text-sm text-gray-500 mt-2 text-center"></p>
+                        <div class="relative h-64 sm:h-72 bg-white/50 p-2 rounded-md">
+                            <canvas id="bpChart" class="rounded-lg"></canvas>
+                        </div>
+                        <p id="bpChartMessage" class="text-sm text-slate-500 mt-2 text-center"></p>
                     </div>
                 </section>
             </div>
@@ -307,18 +335,20 @@ button:hover {
         // Importaciones de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, Timestamp, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 
         // Configuración de Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyCB_GtOMByc22KD__hd0dp1Y1XijFehCtE",
-            authDomain: "abuapp-ed946.firebaseapp.com",
-            projectId: "abuapp-ed946",
-            storageBucket: "abuapp-ed946.firebasestorage.app",
-            messagingSenderId: "144970687143",
-            appId: "1:144970687143:web:35ad5f75b89af8d2c4f182"
-            };
+        const firebaseConfigFromGlobal = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const firebaseConfig = firebaseConfigFromGlobal || {
+            apiKey: "YOUR_API_KEY", 
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'calendario-bienestar-default';
 
         // Inicializar Firebase
@@ -329,11 +359,13 @@ button:hover {
 
         // Variables globales
         let currentYear, currentMonth;
-        let selectedDate = null; 
+        let selectedDate = null;
         let userId = null;
-        let appointments = []; 
-        let bloodPressureReadings = []; 
-        let bpChartInstance = null; 
+        let appointments = [];
+        let bloodPressureReadings = [];
+        let bpChartInstance = null;
+        let unsubscribeAppointments = () => {}; 
+        let unsubscribeBPReadings = () => {};   
 
         // Elementos del DOM
         const calendarGrid = document.getElementById('calendarGrid');
@@ -344,146 +376,235 @@ button:hover {
         const appointmentsForDay = document.getElementById('appointmentsForDay');
         const bloodPressureLog = document.getElementById('bloodPressureLog');
         const bibleVerseText = document.getElementById('bibleVerseText');
-        const bibleVerseCite = document.getElementById('bibleVerseCite'); 
+        const bibleVerseCite = document.getElementById('bibleVerseCite');
         const userIdDisplay = document.getElementById('userIdDisplay');
         const loadingIndicator = document.getElementById('loading-indicator');
-        const bpChartCanvas = document.getElementById('bpChart');
+        const bpChartCanvas = document.getElementById('bpChart').getContext('2d'); 
         const bpChartMessage = document.getElementById('bpChartMessage');
 
-
-        // Modales
+        // Modales y Formularios
         const appointmentModal = document.getElementById('appointmentModal');
         const bpModal = document.getElementById('bpModal');
         const confirmDeleteModal = document.getElementById('confirmDeleteModal');
-
         const appointmentForm = document.getElementById('appointmentForm');
         const bpForm = document.getElementById('bpForm');
 
-        // Botones de abrir modal
+        // Botones
         const openAddAppointmentModalButton = document.getElementById('openAddAppointmentModalButton');
         const openAddBPModalButton = document.getElementById('openAddBPModalButton');
-        
-        // Botones de cerrar modal
         const closeAppointmentModalButton = document.getElementById('closeAppointmentModal');
         const closeBPModalButton = document.getElementById('closeBPModal');
         const cancelAppointmentButton = document.getElementById('cancelAppointment');
         const cancelBPButton = document.getElementById('cancelBP');
-
-        // Botones de confirmación de eliminación
         const cancelDeleteButton = document.getElementById('cancelDeleteButton');
         const confirmDeleteButton = document.getElementById('confirmDeleteButton');
         let deleteFunction = null; 
+
+        // --- Utilidades ---
+        function showLoading(message = "Cargando...") {
+            const loadingTextElement = loadingIndicator.querySelector('div:not(.spinner)');
+            if (loadingTextElement) loadingTextElement.textContent = message;
+            loadingIndicator.classList.remove('hidden');
+            loadingIndicator.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            loadingIndicator.classList.add('hidden');
+            loadingIndicator.style.display = 'none';
+        }
+
+        function openModal(modalElement) { modalElement.style.display = 'flex'; }
+        function closeModal(modalElement) { modalElement.style.display = 'none'; }
+
+        function openConfirmDeleteModal(message, callback) {
+            document.getElementById('confirmDeleteMessage').textContent = message;
+            deleteFunction = callback;
+            openModal(confirmDeleteModal);
+        }
 
         // --- Autenticación y Carga Inicial ---
         async function initializeAppAuth() {
             showLoading("Autenticando...");
             try {
-                await setPersistence(auth, browserLocalPersistence); 
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    console.log("Intentando signInWithCustomToken...");
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    console.log("Intentando signInAnonymously...");
-                    await signInAnonymously(auth);
-                }
+                await setPersistence(auth, browserLocalPersistence);
+                const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (authToken) await signInWithCustomToken(auth, authToken);
+                else await signInAnonymously(auth);
             } catch (error) {
-                console.error("Error en la autenticación inicial:", error);
+                console.error("Error en autenticación inicial:", error);
+                if (error.code === 'auth/invalid-custom-token' || error.code === 'auth/custom-token-mismatch') {
+                    try { await signInAnonymously(auth); } catch (e) { console.error("Error en fallback anónimo:", e); }
+                }
             }
 
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     userId = user.uid;
                     userIdDisplay.textContent = userId;
-                    console.log("Usuario autenticado:", userId);
                     await loadInitialData();
                 } else {
                     userId = null;
                     userIdDisplay.textContent = "No autenticado";
-                    console.log("Usuario no autenticado.");
+                    appointments = []; bloodPressureReadings = [];
+                    renderCalendar(); renderAppointmentsForDay(); renderBloodPressureLog(); renderBPChart();
                     hideLoading();
                 }
             });
         }
-        
+
         async function loadInitialData() {
-            if (!userId) return;
+            if (!userId) { hideLoading(); return; }
             showLoading("Cargando datos...");
             const today = new Date();
             currentYear = today.getFullYear();
-            currentMonth = today.getMonth(); 
-            selectedDate = today.toISOString().split('T')[0]; 
-
+            currentMonth = today.getMonth();
+            selectedDate = today.toISOString().split('T')[0];
             await fetchBibleVerse();
             setupEventListeners();
-            
-            subscribeToAppointments();
-            subscribeToBloodPressureReadings();
-            hideLoading(); 
+            unsubscribeAppointments(); unsubscribeBPReadings();
+            subscribeToAppointments(); subscribeToBloodPressureReadings();
         }
 
-        function showLoading(message = "Cargando...") {
-            const loadingTextElement = loadingIndicator.querySelector('div:not(.spinner)');
-            if (loadingTextElement) {
-                 loadingTextElement.textContent = message;
+        // --- Versículo Bíblico ---
+        async function fetchBibleVerse() {
+            const verses = [ /* ... lista de versículos ... */ ]; // Mantener lista por si falla API
+            try {
+                const prompt = "Dame un versículo bíblico inspirador corto en español con su cita.";
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                const result = await response.json();
+                if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    const match = text.match(/(.*) - (.*)/) || text.match(/(.*)\((.*)\)/);
+                    if (match?.[2]) {
+                        bibleVerseText.textContent = `"${match[1].trim()}"`;
+                        bibleVerseCite.textContent = `- ${match[2].trim()}`;
+                    } else {
+                        const lastSpace = text.lastIndexOf(' ');
+                        bibleVerseText.textContent = `"${lastSpace > 0 ? text.substring(0, lastSpace) : text}"`;
+                        bibleVerseCite.textContent = lastSpace > 0 ? `- ${text.substring(lastSpace + 1)}` : "";
+                    }
+                } else throw new Error("Respuesta API inesperada.");
+            } catch (error) {
+                console.warn("Error API versículo, usando local:", error);
+                const randomVerse = verses[Math.floor(Math.random() * verses.length)] || { text: "Confía en el Señor.", cite: "Proverbios 3:5" };
+                bibleVerseText.textContent = `"${randomVerse.text}"`;
+                bibleVerseCite.textContent = `- ${randomVerse.cite}`;
             }
-            loadingIndicator.style.display = 'flex';
         }
 
-        function hideLoading() {
-            loadingIndicator.style.display = 'none';
+        // --- Event Listeners ---
+        function setupEventListeners() {
+            prevMonthButton.addEventListener('click', () => { currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; } renderCalendar(); });
+            nextMonthButton.addEventListener('click', () => { currentMonth++; if (currentMonth > 11) { currentMonth = 0; currentYear++; } renderCalendar(); });
+            openAddAppointmentModalButton.addEventListener('click', () => {
+                appointmentForm.reset(); appointmentId.value = '';
+                appointmentModalTitle.textContent = "Añadir Nueva Cita";
+                appointmentDate.value = selectedDate || new Date().toISOString().split('T')[0];
+                appointmentTime.value = new Date().toTimeString().substring(0,5);
+                openModal(appointmentModal);
+            });
+            openAddBPModalButton.addEventListener('click', () => {
+                bpForm.reset();
+                bpDate.value = new Date().toISOString().split('T')[0];
+                bpTime.value = new Date().toTimeString().substring(0,5);
+                openModal(bpModal);
+            });
+            closeAppointmentModalButton.addEventListener('click', () => closeModal(appointmentModal));
+            closeBPModalButton.addEventListener('click', () => closeModal(bpModal));
+            cancelAppointmentButton.addEventListener('click', () => closeModal(appointmentModal));
+            cancelBPButton.addEventListener('click', () => closeModal(bpModal));
+            appointmentForm.addEventListener('submit', saveAppointment);
+            bpForm.addEventListener('submit', saveBPReading);
+            cancelDeleteButton.addEventListener('click', () => closeModal(confirmDeleteModal));
+            confirmDeleteButton.addEventListener('click', () => { if (deleteFunction) deleteFunction(); closeModal(confirmDeleteModal); });
         }
 
         // --- Calendario ---
         function renderCalendar() {
-            if (!userId) return; 
+            if (!userId) return;
             showLoading("Actualizando calendario...");
-            // Limpiar calendario excepto cabeceras de días de la semana
-            const dayCellsContainer = calendarGrid.querySelectorAll('.calendar-day, div:empty');
-            dayCellsContainer.forEach(cell => cell.remove());
-
-
+            calendarGrid.innerHTML = '';
+            const todayObj = new Date();
+            const todayDateStr = todayObj.toISOString().split('T')[0];
             const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
             const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
             const daysInMonth = lastDayOfMonth.getDate();
-            const startDayOfWeek = firstDayOfMonth.getDay(); 
+            // Ajuste para que Lunes sea 0, Martes 1, ..., Domingo 6
+            let startDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
 
             currentMonthYearDisplay.textContent = `${firstDayOfMonth.toLocaleString('es-ES', { month: 'long' })} ${currentYear}`;
 
-            for (let i = 0; i < startDayOfWeek; i++) {
-                const emptyCell = document.createElement('div');
-                calendarGrid.appendChild(emptyCell);
-            }
+            for (let i = 0; i < startDayOfWeek; i++) { calendarGrid.appendChild(document.createElement('div')); }
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayCell = document.createElement('div');
-                dayCell.classList.add('calendar-day', 'p-1', 'sm:p-2', 'border', 'border-gray-200', 'text-center', 'cursor-pointer', 'rounded', 'text-xs', 'sm:text-sm');
-                dayCell.textContent = day;
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const currentDateObj = new Date(dateStr + "T00:00:00"); // Para obtener el día de la semana correctamente
+                const dayOfWeek = (currentDateObj.getDay() + 6) % 7; // Lunes = 0, ..., Domingo = 6
+
+                let cellClasses = ['calendar-day', 'relative', 'p-2', 'h-16', 'sm:h-20', 'text-center', 'cursor-pointer', 'rounded-lg', 'text-sm', 'flex', 'items-center', 'justify-center'];
+                
+                // Estilos base (no seleccionado, no hoy, no finde)
+                cellClasses.push('bg-white', 'text-gray-700', 'hover:bg-blue-100');
+
+                dayCell.textContent = day;
                 dayCell.dataset.date = dateStr;
+                
+                // Aplicar clases base
+                dayCell.className = cellClasses.join(' ');
+
+
+                if (dayOfWeek === 5 || dayOfWeek === 6) { // Sábado (5) o Domingo (6)
+                    dayCell.classList.add('weekend-day');
+                     // Quitar hover normal si es finde y no está seleccionado
+                    if (dateStr !== selectedDate) {
+                        dayCell.classList.remove('hover:bg-blue-100');
+                    }
+                }
+                
+                if (dateStr === todayDateStr) {
+                    dayCell.classList.add('today');
+                    if (dateStr !== selectedDate) { // Si es hoy pero no está seleccionado
+                        dayCell.classList.remove('hover:bg-blue-100'); // Quitar hover normal
+                        // El hover de 'today' (si no es finde) se maneja en CSS
+                        if(dayCell.classList.contains('weekend-day')){
+                             // El hover de 'weekend-day' ya está definido y es correcto
+                        } else {
+                            // Si es 'today' pero no 'weekend-day' y no 'selected'
+                            // El hover se define en CSS: #calendarGrid .calendar-day.today:not(.selected):hover
+                        }
+                    }
+                }
 
                 if (appointments.some(app => app.date === dateStr)) {
                     dayCell.classList.add('has-appointment');
                 }
+
                 if (dateStr === selectedDate) {
+                    // Limpiar clases de fondo/texto conflictivas antes de añadir 'selected'
+                    dayCell.classList.remove('bg-white', 'text-gray-700', 'hover:bg-blue-100', 'weekend-day', 'today');
                     dayCell.classList.add('selected');
                 }
-
+                
                 dayCell.addEventListener('click', () => {
                     selectedDate = dateStr;
-                    renderCalendar(); 
-                    renderAppointmentsForDay();
-                    updateSelectedDateDisplay();
+                    renderCalendar(); renderAppointmentsForDay(); updateSelectedDateDisplay();
                 });
                 calendarGrid.appendChild(dayCell);
             }
             updateSelectedDateDisplay();
-            renderAppointmentsForDay(); 
+            renderAppointmentsForDay();
             hideLoading();
         }
 
         function updateSelectedDateDisplay() {
             if (selectedDate) {
-                const dateObj = new Date(selectedDate + 'T00:00:00'); 
+                const dateObj = new Date(selectedDate + 'T00:00:00');
                 selectedDateDisplay.textContent = dateObj.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             } else {
                 selectedDateDisplay.textContent = "Ningún día seleccionado";
@@ -494,67 +615,46 @@ button:hover {
         function subscribeToAppointments() {
             if (!userId) return;
             const appointmentsCol = collection(db, `artifacts/${appId}/users/${userId}/appointments`);
-            const q = query(appointmentsCol); 
-
-            onSnapshot(q, (snapshot) => {
+            const q = query(appointmentsCol);
+            unsubscribeAppointments = onSnapshot(q, (snapshot) => {
                 showLoading("Actualizando citas...");
                 appointments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                appointments.sort((a, b) => {
-                    const dateA = new Date(`${a.date}T${a.time || '00:00'}`);
-                    const dateB = new Date(`${b.date}T${b.time || '00:00'}`);
-                    return dateA - dateB;
-                });
-                console.log("Citas actualizadas desde Firestore:", appointments);
-                renderCalendar(); 
-                renderAppointmentsForDay(); 
+                appointments.sort((a, b) => new Date(`${a.date}T${a.time||'00:00'}`) - new Date(`${b.date}T${b.time||'00:00'}`));
+                renderCalendar(); renderAppointmentsForDay();
                 hideLoading();
-            }, (error) => {
-                console.error("Error al suscribirse a las citas:", error);
-                hideLoading();
-            });
+            }, (error) => { console.error("Error suscripción citas:", error); hideLoading(); });
         }
 
         function renderAppointmentsForDay() {
             if (!selectedDate || !userId) {
-                appointmentsForDay.innerHTML = '<p class="text-gray-600 text-sm sm:text-base">Selecciona un día en el calendario para ver las citas.</p>';
-                return;
+                appointmentsForDay.innerHTML = '<p class="text-slate-600">Selecciona un día.</p>'; return;
             }
-
-            const dayAppointments = appointments.filter(app => app.date === selectedDate);
-            
-            if (dayAppointments.length === 0) {
-                appointmentsForDay.innerHTML = '<p class="text-gray-600 text-sm sm:text-base">No hay citas para este día.</p>';
-                return;
+            const dayApps = appointments.filter(app => app.date === selectedDate);
+            if (dayApps.length === 0) {
+                appointmentsForDay.innerHTML = '<p class="text-slate-600">No hay citas este día.</p>'; return;
             }
-
-            appointmentsForDay.innerHTML = dayAppointments.map(app => `
+            appointmentsForDay.innerHTML = dayApps.map(app =>
                 <div class="p-3 bg-white rounded-md shadow border-l-4 ${getAppointmentColor(app.type)}">
                     <div class="flex justify-between items-start">
                         <div>
-                            <h4 class="font-semibold text-sm sm:text-base">${app.type}</h4>
-                            <p class="text-xs sm:text-sm text-gray-600">${app.time}</p>
-                            ${app.notes ? `<p class="text-xs sm:text-sm text-gray-500 mt-1">${app.notes}</p>` : ''}
+                            <h4 class="font-semibold text-sm">${app.type}</h4>
+                            <p class="text-xs text-gray-600">${app.time||'Sin hora'}</p>
+                            ${app.notes ? `<p class="text-xs text-gray-500 mt-1">${app.notes}</p>` : ''}
                         </div>
-                        <div>
-                            <button class="edit-appointment text-blue-500 hover:text-blue-700 mr-2 p-1" data-id="${app.id}"><i class="fas fa-edit"></i></button>
-                            <button class="delete-appointment text-red-500 hover:text-red-700 p-1" data-id="${app.id}"><i class="fas fa-trash-alt"></i></button>
+                        <div class="flex-shrink-0">
+                            <button class="edit-appointment text-blue-500 hov:text-blue-700 mr-2 p-1" data-id="${app.id}"><i class="fas fa-edit"></i></button>
+                            <button class="delete-appointment text-red-500 hov:text-red-700 p-1" data-id="${app.id}"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </div>
-                </div>
-            `).join('');
-
-            appointmentsForDay.querySelectorAll('.edit-appointment').forEach(button => {
-                button.addEventListener('click', (e) => handleEditAppointment(e.currentTarget.dataset.id));
-            });
-            appointmentsForDay.querySelectorAll('.delete-appointment').forEach(button => {
-                button.addEventListener('click', (e) => handleDeleteAppointment(e.currentTarget.dataset.id));
-            });
+                </div>).join('');
+            appointmentsForDay.querySelectorAll('.edit-appointment').forEach(b => b.addEventListener('click', (e) => handleEditAppointment(e.currentTarget.dataset.id)));
+            appointmentsForDay.querySelectorAll('.delete-appointment').forEach(b => b.addEventListener('click', (e) => handleDeleteAppointment(e.currentTarget.dataset.id)));
         }
-        
-        function getAppointmentColor(type) { 
+
+        function getAppointmentColor(type) { /* ... misma función ... */ 
             switch (type) {
                 case 'Hospital': return 'border-red-500';
-                case 'Médico de Cabecera': return 'border-blue-500'; 
+                case 'Médico de Cabecera': return 'border-blue-500';
                 case 'Cirujano': return 'border-purple-500';
                 case 'Endocrino': return 'border-yellow-500';
                 case 'Enfermera (Tensión)': return 'border-teal-500';
@@ -564,412 +664,124 @@ button:hover {
         }
 
         async function saveAppointment(e) {
-            e.preventDefault();
-            if (!userId) {
-                console.warn("Debes estar autenticado para guardar citas.");
-                return;
-            }
+            e.preventDefault(); if (!userId) { console.warn("Autenticación requerida."); return; }
             showLoading("Guardando cita...");
-
-            const id = document.getElementById('appointmentId').value;
-            const appointmentData = {
-                date: document.getElementById('appointmentDate').value,
-                time: document.getElementById('appointmentTime').value,
-                type: document.getElementById('appointmentType').value,
-                notes: document.getElementById('appointmentNotes').value,
-            };
-
+            const id = appointmentId.value;
+            const data = { date: appointmentDate.value, time: appointmentTime.value, type: appointmentType.value, notes: appointmentNotes.value };
             try {
-                const appointmentCollectionPath = `artifacts/${appId}/users/${userId}/appointments`;
-                if (id) { 
-                    const appointmentRef = doc(db, appointmentCollectionPath, id);
-                    await updateDoc(appointmentRef, appointmentData);
-                    console.log("Cita actualizada con ID: ", id);
-                } else { 
-                    await addDoc(collection(db, appointmentCollectionPath), appointmentData);
-                    console.log("Nueva cita añadida");
-                }
-                closeModal(appointmentModal);
-                appointmentForm.reset();
-            } catch (error) {
-                console.error("Error guardando cita: ", error);
-            } finally {
-                hideLoading();
-            }
+                const path = `artifacts/${appId}/users/${userId}/appointments`;
+                if (id) await updateDoc(doc(db, path, id), data);
+                else await addDoc(collection(db, path), data);
+                closeModal(appointmentModal); appointmentForm.reset();
+            } catch (err) { console.error("Error guardando cita:", err); } finally { hideLoading(); }
         }
 
         function handleEditAppointment(id) {
-            const appointment = appointments.find(app => app.id === id);
-            if (appointment) {
-                document.getElementById('appointmentId').value = appointment.id;
-                document.getElementById('appointmentDate').value = appointment.date;
-                document.getElementById('appointmentTime').value = appointment.time;
-                document.getElementById('appointmentType').value = appointment.type;
-                document.getElementById('appointmentNotes').value = appointment.notes || '';
-                document.getElementById('appointmentModalTitle').textContent = "Editar Cita";
-                openModal(appointmentModal);
+            const app = appointments.find(a => a.id === id);
+            if (app) {
+                appointmentId.value = app.id; appointmentDate.value = app.date; appointmentTime.value = app.time;
+                appointmentType.value = app.type; appointmentNotes.value = app.notes || '';
+                appointmentModalTitle.textContent = "Editar Cita"; openModal(appointmentModal);
             }
         }
 
         function handleDeleteAppointment(id) {
-            openConfirmDeleteModal("¿Estás seguro de que quieres eliminar esta cita?", async () => {
-                if (!userId) return;
-                showLoading("Eliminando cita...");
-                try {
-                    const appointmentRef = doc(db, `artifacts/${appId}/users/${userId}/appointments`, id);
-                    await deleteDoc(appointmentRef);
-                    console.log("Cita eliminada con ID: ", id);
-                } catch (error) {
-                    console.error("Error eliminando cita: ", error);
-                } finally {
-                    hideLoading();
-                }
+            openConfirmDeleteModal("¿Eliminar esta cita?", async () => {
+                if (!userId) return; showLoading("Eliminando cita...");
+                try { await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/appointments`, id)); }
+                catch (err) { console.error("Error eliminando cita:", err); } finally { hideLoading(); }
             });
         }
 
-        // --- Registro de Tensión Arterial y Gráfico ---
+        // --- Tensión Arterial ---
         function subscribeToBloodPressureReadings() {
             if (!userId) return;
             const bpCol = collection(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`);
-            const q = query(bpCol); 
-
-            onSnapshot(q, (snapshot) => {
-                showLoading("Actualizando lecturas de tensión...");
-                bloodPressureReadings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                bloodPressureReadings.sort((a, b) => {
-                    const dateA = new Date(`${a.date}T${a.time || '00:00'}`);
-                    const dateB = new Date(`${b.date}T${b.time || '00:00'}`);
-                    return dateA - dateB; 
-                });
-                console.log("Lecturas de tensión actualizadas:", bloodPressureReadings);
-                renderBloodPressureLog();
-                renderBPChart(); 
+            const q = query(bpCol);
+            unsubscribeBPReadings = onSnapshot(q, (snapshot) => {
+                showLoading("Actualizando tensión...");
+                bloodPressureReadings = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                bloodPressureReadings.sort((a,b) => new Date(`${a.date}T${a.time||'00:00'}`) - new Date(`${b.date}T${b.time||'00:00'}`));
+                renderBloodPressureLog(); renderBPChart();
                 hideLoading();
-            }, (error) => {
-                console.error("Error al suscribirse a las lecturas de tensión:", error);
-                hideLoading();
-            });
+            }, (error) => { console.error("Error suscripción tensión:", error); hideLoading(); });
         }
 
-        function renderBloodPressureLog() {
-            if (!userId) {
-                 bloodPressureLog.innerHTML = '<p class="text-gray-600 text-sm sm:text-base">Debes estar autenticado para ver el registro.</p>';
-                return;
-            }
-            const reversedReadings = [...bloodPressureReadings].reverse(); 
-
-            if (reversedReadings.length === 0) {
-                bloodPressureLog.innerHTML = '<p class="text-gray-600 text-sm sm:text-base">Aún no hay registros de tensión.</p>';
-                return;
-            }
-
-            bloodPressureLog.innerHTML = reversedReadings.map(bp => {
-                const bpDate = new Date(bp.date + 'T' + (bp.time || '00:00:00')); 
-                return `
+        function renderBloodPressureLog() { /* ... misma función, ajustada para nueva estética si es necesario ... */
+            if (!userId) { bloodPressureLog.innerHTML = '<p class="text-slate-600">Autenticación requerida.</p>'; return; }
+            const reversed = [...bloodPressureReadings].reverse();
+            if (reversed.length === 0) { bloodPressureLog.innerHTML = '<p class="text-slate-600">No hay registros.</p>'; return; }
+            bloodPressureLog.innerHTML = reversed.map(r => `
                 <div class="p-3 bg-white rounded-md shadow border-l-4 border-sky-500">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="font-semibold text-sm sm:text-base">${bp.systolic} / ${bp.diastolic} mmHg ${bp.pulse ? `(${bp.pulse} ppm)` : ''}</p>
-                            <p class="text-xs sm:text-sm text-gray-600">${bpDate.toLocaleDateString('es-ES')} ${bp.time || ''}</p>
-                            ${bp.notes ? `<p class="text-xs sm:text-sm text-gray-500 mt-1">${bp.notes}</p>` : ''}
+                            <p class="font-semibold text-sm">${new Date(r.date+'T'+(r.time||'00:00')).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})} ${r.time?'- '+r.time:''}</p>
+                            <p class="text-md text-gray-800">Sist: <b class="text-black">${r.systolic}</b>, Diast: <b class="text-black">${r.diastolic}</b> mmHg ${r.pulse?`, Pulso: <b class="text-black">${r.pulse}</b> bpm`:''}</p>
+                            ${r.notes?`<p class="text-xs text-gray-500 mt-1">Notas: ${r.notes}</p>`:''}
                         </div>
-                        <button class="delete-bp text-red-500 hover:text-red-700 p-1" data-id="${bp.id}"><i class="fas fa-trash-alt"></i></button>
+                        <div class="flex-shrink-0">
+                            <button class="delete-bp text-red-500 hov:text-red-700 p-1" data-id="${r.id}"><i class="fas fa-trash-alt"></i></button>
+                        </div>
                     </div>
-                </div>
-            `}).join('');
-            
-            bloodPressureLog.querySelectorAll('.delete-bp').forEach(button => {
-                button.addEventListener('click', (e) => handleDeleteBPReading(e.currentTarget.dataset.id));
-            });
+                </div>`).join('');
+            bloodPressureLog.querySelectorAll('.delete-bp').forEach(b => b.addEventListener('click', (e) => handleDeleteBPReading(e.currentTarget.dataset.id)));
         }
-
-        function renderBPChart() {
-            if (!userId) return;
-            const ctx = bpChartCanvas.getContext('2d');
-
-            if (bpChartInstance) {
-                bpChartInstance.destroy(); 
-            }
-
-            if (bloodPressureReadings.length === 0) {
-                bpChartMessage.textContent = "No hay suficientes datos para mostrar el gráfico.";
-                bpChartCanvas.style.display = 'none'; 
-                return;
-            }
-            bpChartCanvas.style.display = 'block'; 
-            bpChartMessage.textContent = "";
-
-
-            const labels = bloodPressureReadings.map(bp => {
-                const date = new Date(bp.date + 'T' + (bp.time || "00:00"));
-                return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-            });
-            const systolicData = bloodPressureReadings.map(bp => bp.systolic);
-            const diastolicData = bloodPressureReadings.map(bp => bp.diastolic);
-
-            bpChartInstance = new Chart(ctx, {
-                type: 'bar', 
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Sistólica (Alta)',
-                            data: systolicData,
-                            backgroundColor: 'rgba(59, 130, 246, 0.7)', 
-                            borderColor: 'rgba(59, 130, 246, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Diastólica (Baja)',
-                            data: diastolicData,
-                            backgroundColor: 'rgba(14, 165, 233, 0.7)', 
-                            borderColor: 'rgba(14, 165, 233, 1)',
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true, 
-                    scales: {
-                        y: {
-                            beginAtZero: false, 
-                            title: {
-                                display: true,
-                                text: 'Presión (mmHg)'
-                            }
-                        },
-                        x: {
-                             title: {
-                                display: true,
-                                text: 'Fecha de Toma'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                        }
-                    }
-                }
-            });
-        }
-
-
+        
         async function saveBPReading(e) {
-            e.preventDefault();
-            if (!userId) {
-                console.warn("Debes estar autenticado para guardar lecturas.");
-                return;
-            }
-            showLoading("Guardando lectura de tensión...");
-
-            const bpData = {
-                date: document.getElementById('bpDate').value,
-                time: document.getElementById('bpTime').value,
-                systolic: parseInt(document.getElementById('bpSystolic').value),
-                diastolic: parseInt(document.getElementById('bpDiastolic').value),
-                pulse: document.getElementById('bpPulse').value ? parseInt(document.getElementById('bpPulse').value) : null,
-                notes: document.getElementById('bpNotes').value,
-            };
-
+            e.preventDefault(); if (!userId) { console.warn("Autenticación requerida."); return; }
+            showLoading("Guardando tensión...");
+            const data = { date: bpDate.value, time: bpTime.value, systolic: parseInt(bpSystolic.value), diastolic: parseInt(bpDiastolic.value), pulse: bpPulse.value ? parseInt(bpPulse.value) : null, notes: bpNotes.value };
             try {
-                const bpCollectionPath = `artifacts/${appId}/users/${userId}/bloodPressureReadings`;
-                await addDoc(collection(db, bpCollectionPath), bpData);
-                console.log("Nueva lectura de tensión añadida");
-                closeModal(bpModal);
-                bpForm.reset();
-            } catch (error) {
-                console.error("Error guardando lectura de tensión: ", error);
-            } finally {
-                hideLoading();
-            }
+                await addDoc(collection(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`), data);
+                closeModal(bpModal); bpForm.reset();
+            } catch (err) { console.error("Error guardando tensión:", err); } finally { hideLoading(); }
         }
 
         function handleDeleteBPReading(id) {
-             openConfirmDeleteModal("¿Estás seguro de que quieres eliminar esta toma de tensión?", async () => {
-                if (!userId) return;
-                showLoading("Eliminando lectura...");
-                try {
-                    const bpRef = doc(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`, id);
-                    await deleteDoc(bpRef);
-                    console.log("Lectura de tensión eliminada con ID: ", id);
-                } catch (error) {
-                    console.error("Error eliminando lectura de tensión: ", error);
-                } finally {
-                    hideLoading();
-                }
+            openConfirmDeleteModal("¿Eliminar esta toma de tensión?", async () => {
+                if(!userId) return; showLoading("Eliminando toma...");
+                try { await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`, id));}
+                catch (err) { console.error("Error eliminando toma:", err); } finally { hideLoading(); }
             });
         }
 
-        // --- Versículo Bíblico ---
-        async function fetchBibleVerse() {
-            showLoading("Cargando versículo...");
-            bibleVerseText.textContent = "Cargando...";
-            bibleVerseCite.textContent = "";
-
-            const prompt = "Proporciona un único versículo bíblico edificante y corto en español, seguido únicamente por su cita entre paréntesis (Libro Capítulo:Versículo). No incluyas ninguna frase introductoria como 'Claro, aquí tienes...' o similar. Ejemplo: Porque de tal manera amó Dios al mundo... (Juan 3:16)";
-            const apiKey = "TU_API_KEY_AQUI"; // Reemplaza con tu clave de API válida
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            const payload = {
-                prompt: {
-                    text: prompt
+        function renderBPChart() { /* ... misma función ... */
+            if (bpChartInstance) bpChartInstance.destroy();
+            if (!bloodPressureReadings || bloodPressureReadings.length < 2) {
+                document.getElementById('bpChart').style.display = 'none';
+                bpChartMessage.textContent = "Se necesitan al menos dos registros para mostrar la evolución.";
+                bpChartMessage.style.display = 'block'; return;
+            }
+            document.getElementById('bpChart').style.display = 'block';
+            bpChartMessage.style.display = 'none';
+            const labels = bloodPressureReadings.map(r => `${new Date(r.date+'T00:00').toLocaleDateString('es-ES',{month:'short',day:'numeric'})}${r.time?' '+r.time.substring(0,5):''}`);
+            const systolic = bloodPressureReadings.map(r => r.systolic);
+            const diastolic = bloodPressureReadings.map(r => r.diastolic);
+            const pulse = bloodPressureReadings.map(r => r.pulse || null);
+            bpChartInstance = new Chart(bpChartCanvas, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Sistólica', data: systolic, borderColor: 'rgb(239,68,68)', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.1, yAxisID: 'yPressure', pointRadius:3, pointHoverRadius:5 },
+                        { label: 'Diastólica', data: diastolic, borderColor: 'rgb(59,130,246)', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.1, yAxisID: 'yPressure', pointRadius:3, pointHoverRadius:5 },
+                        { label: 'Pulso', data: pulse, borderColor: 'rgb(16,185,129)', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.1, yAxisID: 'yPulse', pointRadius:2, pointHoverRadius:4, borderDash:[5,5], hidden: !pulse.some(p=>p!==null) }
+                    ]
                 },
-                temperature: 0.7,
-                maxOutputTokens: 60
-            };
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Error en la API: ${response.statusText}`);
+                options: {
+                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: { title: { display: true, text: 'Fecha y Hora' } },
+                        yPressure: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Presión (mmHg)' }, suggestedMin: 50, suggestedMax: 180 },
+                        yPulse: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Pulso (bpm)' }, suggestedMin: 40, suggestedMax: 120, grid: { drawOnChartArea: false }, display: pulse.some(p=>p!==null&&!isNaN(p)) }
+                    },
+                    plugins: { legend: { position: 'top' }, tooltip: { mode:'index', intersect:false, callbacks: { label: (c) => `${c.dataset.label||''}: ${c.parsed.y||''} ${c.dataset.yAxisID==='yPressure'?'mmHg':'bpm'}`}}}
                 }
-
-                const result = await response.json();
-                const verse = result.candidates?.[0]?.output;
-
-                if (verse) {
-                    const match = verse.match(/(.*)\s*\(([^)]+)\)$/);
-                    if (match && match[1] && match[2]) {
-                        bibleVerseText.textContent = match[1].trim();
-                        bibleVerseCite.textContent = `(${match[2].trim()})`;
-                    } else {
-                        bibleVerseText.textContent = verse;
-                        bibleVerseCite.textContent = "";
-                        console.warn("No se pudo extraer la cita del versículo:", verse);
-                    }
-                } else {
-                    bibleVerseText.textContent = "No se pudo cargar el versículo en este momento.";
-                    bibleVerseCite.textContent = "";
-                    console.error("Respuesta inesperada de la API:", result);
-                }
-            } catch (error) {
-                console.error("Error al obtener el versículo bíblico:", error);
-                bibleVerseText.textContent = "No se pudo cargar el versículo. Intenta más tarde.";
-                bibleVerseCite.textContent = "";
-            } finally {
-                hideLoading();
-            }
+            });
         }
 
-        // --- Modales ---
-        function openModal(modalElement) {
-            if (selectedDate) {
-                if (modalElement === appointmentModal && !document.getElementById('appointmentId').value) { 
-                    document.getElementById('appointmentDate').value = selectedDate;
-                }
-                if (modalElement === bpModal) {
-                     document.getElementById('bpDate').value = selectedDate;
-                     const now = new Date();
-                     document.getElementById('bpTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-                }
-            }
-            modalElement.style.display = "block";
-        }
-
-        function closeModal(modalElement) {
-            modalElement.style.display = "none";
-            if (modalElement === appointmentModal) {
-                appointmentForm.reset();
-                document.getElementById('appointmentId').value = ''; 
-                document.getElementById('appointmentModalTitle').textContent = "Añadir Nueva Cita";
-            }
-            if (modalElement === bpModal) {
-                bpForm.reset();
-            }
-        }
-        
-        function openConfirmDeleteModal(message, onConfirm) {
-            document.getElementById('confirmDeleteMessage').textContent = message;
-            deleteFunction = onConfirm; 
-            openModal(confirmDeleteModal);
-        }
-
-        // --- Event Listeners ---
-        function setupEventListeners() {
-            prevMonthButton.addEventListener('click', () => {
-                currentMonth--;
-                if (currentMonth < 0) {
-                    currentMonth = 11;
-                    currentYear--;
-                }
-                renderCalendar();
-            });
-
-            nextMonthButton.addEventListener('click', () => {
-                currentMonth++;
-                if (currentMonth > 11) {
-                    currentMonth = 0;
-                    currentYear++;
-                }
-                renderCalendar();
-            });
-
-
-            openAddAppointmentModalButton.addEventListener('click', () => {
-                 document.getElementById('appointmentModalTitle').textContent = "Añadir Nueva Cita";
-                 document.getElementById('appointmentId').value = ''; 
-                 appointmentForm.reset(); 
-                 if(selectedDate) document.getElementById('appointmentDate').value = selectedDate; 
-                 const now = new Date();
-                 document.getElementById('appointmentTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-                 openModal(appointmentModal);
-            });
-            openAddBPModalButton.addEventListener('click', () => {
-                bpForm.reset();
-                if(selectedDate) document.getElementById('bpDate').value = selectedDate;
-                const now = new Date();
-                document.getElementById('bpTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-                openModal(bpModal);
-            });
-
-            closeAppointmentModalButton.addEventListener('click', () => closeModal(appointmentModal));
-            cancelAppointmentButton.addEventListener('click', () => closeModal(appointmentModal));
-            closeBPModalButton.addEventListener('click', () => closeModal(bpModal));
-            cancelBPButton.addEventListener('click', () => closeModal(bpModal));
-            
-            cancelDeleteButton.addEventListener('click', () => {
-                closeModal(confirmDeleteModal);
-                deleteFunction = null; 
-            });
-            confirmDeleteButton.addEventListener('click', () => {
-                if (deleteFunction) {
-                    deleteFunction();
-                }
-                closeModal(confirmDeleteModal);
-                deleteFunction = null;
-            });
-
-            window.onclick = function(event) {
-                if (event.target == appointmentModal) {
-                    closeModal(appointmentModal);
-                }
-                if (event.target == bpModal) {
-                    closeModal(bpModal);
-                }
-                if (event.target == confirmDeleteModal) {
-                    closeModal(confirmDeleteModal);
-                    deleteFunction = null;
-                }
-            }
-
-            appointmentForm.addEventListener('submit', saveAppointment);
-            bpForm.addEventListener('submit', saveBPReading);
-        }
-
-        // Iniciar la aplicación
-        initializeAppAuth();
-
+        // --- Inicialización ---
+        document.addEventListener('DOMContentLoaded', initializeAppAuth);
     </script>
 </body>
 </html>
