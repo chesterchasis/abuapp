@@ -65,6 +65,11 @@ button:hover {
     font-weight: bold;
 }
 
+.calendar-day.has-appointment {
+    background-color: #e0f7ff;
+    border-color: #007BFF;
+}
+
 /* COMENTARIO: Estilos para el versículo bíblico fueron simplificados o eliminados 
    ya que ahora se aplican clases de Tailwind directamente en el HTML 
    para su integración con la imagen de fondo. */
@@ -118,6 +123,18 @@ button:hover {
         font-size: 0.8em;
         padding: 6px;
     }
+}
+
+#bibleVerseText {
+    font-style: italic;
+    font-size: 1.2em;
+    color: #333;
+}
+
+#bibleVerseCite {
+    font-size: 0.9em;
+    color: #555;
+    margin-top: 5px;
 }
     </style>
 </head>
@@ -794,11 +811,18 @@ button:hover {
             showLoading("Cargando versículo...");
             bibleVerseText.textContent = "Cargando...";
             bibleVerseCite.textContent = "";
+
             const prompt = "Proporciona un único versículo bíblico edificante y corto en español, seguido únicamente por su cita entre paréntesis (Libro Capítulo:Versículo). No incluyas ninguna frase introductoria como 'Claro, aquí tienes...' o similar. Ejemplo: Porque de tal manera amó Dios al mundo... (Juan 3:16)";
-            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-            const payload = { contents: chatHistory };
-            const apiKey = ""; 
+            const apiKey = "TU_API_KEY_AQUI"; // Reemplaza con tu clave de API válida
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            const payload = {
+                prompt: {
+                    text: prompt
+                },
+                temperature: 0.7,
+                maxOutputTokens: 60
+            };
 
             try {
                 const response = await fetch(apiUrl, {
@@ -806,28 +830,28 @@ button:hover {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+
                 if (!response.ok) {
                     throw new Error(`Error en la API: ${response.statusText}`);
                 }
+
                 const result = await response.json();
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    let fullText = result.candidates[0].content.parts[0].text;
-                    
-                    const match = fullText.match(/(.*)\s*\(([^)]+)\)$/); 
+                const verse = result.candidates?.[0]?.output;
+
+                if (verse) {
+                    const match = verse.match(/(.*)\s*\(([^)]+)\)$/);
                     if (match && match[1] && match[2]) {
                         bibleVerseText.textContent = match[1].trim();
                         bibleVerseCite.textContent = `(${match[2].trim()})`;
                     } else {
-                        bibleVerseText.textContent = fullText;
-                        bibleVerseCite.textContent = ""; 
-                        console.warn("No se pudo extraer la cita del versículo:", fullText);
+                        bibleVerseText.textContent = verse;
+                        bibleVerseCite.textContent = "";
+                        console.warn("No se pudo extraer la cita del versículo:", verse);
                     }
                 } else {
                     bibleVerseText.textContent = "No se pudo cargar el versículo en este momento.";
                     bibleVerseCite.textContent = "";
-                    console.error("Respuesta inesperada de la API de Gemini:", result);
+                    console.error("Respuesta inesperada de la API:", result);
                 }
             } catch (error) {
                 console.error("Error al obtener el versículo bíblico:", error);
