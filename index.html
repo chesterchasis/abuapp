@@ -1,976 +1,976 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Calendario de Bienestar</title>
- <script src="https://cdn.tailwindcss.com"></script>
- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
- <style>
- body {
- font-family: 'Inter', sans-serif;
- background-image: linear-gradient(to bottom, rgba(173, 216, 230, 0.4), rgba(224, 231, 255, 0.7)), url('https://raw.githubusercontent.com/chesterchasis/abuapp/refs/heads/main/cielo.png');
- background-size: cover;
- background-position: center;
- background-attachment: fixed;
- color: #1f2937;
- margin: 0;
- min-height: 100vh;
- }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario de Bienestar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: linear-gradient(to bottom, rgba(173, 216, 230, 0.4), rgba(224, 231, 255, 0.7)), url('https://raw.githubusercontent.com/chesterchasis/abuapp/refs/heads/main/cielo.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #1f2937;
+            margin: 0;
+            min-height: 100vh;
+        }
 
- #loading-indicator {
- position: fixed;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- background-color: rgba(255, 255, 255, 0.85);
- display: flex;
- align-items: center;
- justify-content: center;
- z-index: 9999;
- flex-direction: column;
- gap: 1rem;
- }
+        #loading-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1rem;
+        }
 
- .spinner {
- border: 4px solid rgba(0, 0, 0, 0.1);
- width: 36px;
- height: 36px;
- border-radius: 50%;
- border-left-color: #007BFF;
- animation: spin 1s ease infinite;
- }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #007BFF;
+            animation: spin 1s ease infinite;
+        }
 
- @keyframes spin {
- 0% { transform: rotate(0deg); }
- 100% { transform: rotate(360deg); }
- }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
- .modal {
- display: none;
- position: fixed;
- z-index: 1000;
- left: 0;
- top: 0;
- width: 100%;
- height: 100%;
- overflow: auto;
- background-color: rgba(0,0,0,0.6);
- align-items: center;
- justify-content: center;
- }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+        }
 
- .modal-content {
- background-color: #fefefe;
- margin: auto;
- padding: 20px;
- border: 1px solid #b0bec5;
- border-radius: 12px;
- width: 90%;
- max-width: 500px;
- box-shadow: 0 5px 15px rgba(0,0,0,0.3);
- position: relative;
- }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #b0bec5;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
 
- .close-button {
- color: #757575;
- float: right;
- font-size: 28px;
- font-weight: bold;
- position: absolute;
- top: 10px;
- right: 20px;
- }
+        .close-button {
+            color: #757575;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
 
- .close-button:hover,
- .close-button:focus {
- color: #212121;
- text-decoration: none;
- cursor: pointer;
- }
+        .close-button:hover,
+        .close-button:focus {
+            color: #212121;
+            text-decoration: none;
+            cursor: pointer;
+        }
 
- .calendar-day {
- position: relative;
- transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
- }
+        .calendar-day {
+            position: relative;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
 
- #calendarGrid .calendar-day.selected {
- background-color: #1d4ed8;
- color: white !important;
- font-weight: bold;
- transform: scale(1.05);
- }
+        #calendarGrid .calendar-day.selected {
+            background-color: #1d4ed8;
+            color: white !important;
+            font-weight: bold;
+            transform: scale(1.05);
+        }
 
- #calendarGrid .calendar-day.has-appointment {
- background-color: #f0f9ff;
- position: relative;
- }
+        #calendarGrid .calendar-day.has-appointment {
+            background-color: #f0f9ff;
+            position: relative;
+        }
 
- #calendarGrid .calendar-day.has-appointment.hospital {
- background-color: #fee2e2;
- border: 1px solid #ef4444;
- }
+        #calendarGrid .calendar-day.has-appointment.hospital {
+            background-color: #fee2e2;
+            border: 1px solid #ef4444;
+        }
 
- #calendarGrid .calendar-day.has-appointment.doctor {
- background-color: #dbeafe;
- border: 1px solid #3b82f6;
- }
+        #calendarGrid .calendar-day.has-appointment.doctor {
+            background-color: #dbeafe;
+            border: 1px solid #3b82f6;
+        }
 
- #calendarGrid .calendar-day.has-appointment.surgeon {
- background-color: #f3e8ff;
- border: 1px solid #8b5cf6;
- }
+        #calendarGrid .calendar-day.has-appointment.surgeon {
+            background-color: #f3e8ff;
+            border: 1px solid #8b5cf6;
+        }
 
- #calendarGrid .calendar-day.has-appointment.endocrino {
- background-color: #fef9c3;
- border: 1px solid #facc15;
- }
+        #calendarGrid .calendar-day.has-appointment.endocrino {
+            background-color: #fef9c3;
+            border: 1px solid #facc15;
+        }
 
- #calendarGrid .calendar-day.has-appointment.nurse {
- background-color: #ccfbf1;
- border: 1px solid #10b981;
- }
+        #calendarGrid .calendar-day.has-appointment.nurse {
+            background-color: #ccfbf1;
+            border: 1px solid #10b981;
+        }
 
- #calendarGrid .calendar-day.has-appointment.other {
- background-color: #e0e7ff;
- border: 1px solid #6366f1;
- }
+        #calendarGrid .calendar-day.has-appointment.other {
+            background-color: #e0e7ff;
+            border: 1px solid #6366f1;
+        }
 
- #calendarGrid .calendar-day.today {
- font-weight: bold;
- color: #0ea5e9;
- border: 1px solid #0ea5e9;
- }
+        #calendarGrid .calendar-day.today {
+            font-weight: bold;
+            color: #0ea5e9;
+            border: 1px solid #0ea5e9;
+        }
 
- #calendarGrid .calendar-day.today:not(.selected):hover {
- background-color: #e0f2fe;
- }
+        #calendarGrid .calendar-day.today:not(.selected):hover {
+            background-color: #e0f2fe;
+        }
 
- #calendarGrid .calendar-day.weekend-day:not(.selected) {
- background-color: #f0f9ff;
- color: #374151;
- }
+        #calendarGrid .calendar-day.weekend-day:not(.selected) {
+            background-color: #f0f9ff;
+            color: #374151;
+        }
 
- #calendarGrid .calendar-day.weekend-day:not(.selected):hover {
- background-color: #e0f2fe;
- }
+        #calendarGrid .calendar-day.weekend-day:not(.selected):hover {
+            background-color: #e0f2fe;
+        }
 
- .text-shadow-md {
- text-shadow: 0 2px 4px rgba(0,0,0,0.3);
- }
+        .text-shadow-md {
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
 
- .text-shadow-sm {
- text-shadow: 0 1px 2px rgba(0,0,0,0.2);
- }
+        .text-shadow-sm {
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
 
- .btn-primary {
- background-color: #007BFF;
- color: white;
- }
+        .btn-primary {
+            background-color: #007BFF;
+            color: white;
+        }
 
- .btn-primary:hover {
- background-color: #0056b3;
- }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
 
- .btn-secondary {
- background-color: #e2e8f0;
- color: #4a5568;
- }
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
 
- .btn-secondary:hover {
- background-color: #cbd5e1;
- }
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
 
- #calendarGrid .calendar-day.has-appointment.selected {
- background-color: #1d4ed8 !important;
- color: white !important;
- border: none !important;
- }
+        #calendarGrid .calendar-day.has-appointment.selected {
+            background-color: #1d4ed8 !important;
+            color: white !important;
+            border: none !important;
+        }
 
- #calendarGrid .calendar-day.has-appointment.today:not(.selected) {
- border: 2px solid #0ea5e9 !important;
- }
- </style>
+        #calendarGrid .calendar-day.has-appointment.today:not(.selected) {
+            border: 2px solid #0ea5e9 !important;
+        }
+    </style>
 </head>
 <body class="p-4 md:p-8">
- <div id="loading-indicator" class="hidden">
- <div class="spinner"></div>
- <div class="text-lg font-semibold text-gray-700">Cargando...</div>
- </div>
+    <div id="loading-indicator" class="hidden">
+        <div class="spinner"></div>
+        <div class="text-lg font-semibold text-gray-700">Cargando...</div>
+    </div>
 
- <div class="max-w-6xl mx-auto bg-white/90 backdrop-blur-sm p-4 sm:p-6 rounded-xl shadow-2xl">
- <div class="relative text-center mb-8 pt-8 pb-4">
- <header class="mb-6">
- <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-800 text-shadow-sm">🗓️ Calendario de Bienestar 👵</h1>
- <p class="text-md sm:text-lg md:text-xl mt-2 text-slate-700 text-shadow-sm">Organiza tus citas médicas y cuida tu salud.</p>
- <p class="text-sm mt-2 text-slate-600">ID de Usuario: <span id="userIdDisplay" class="font-semibold">Cargando...</span></p>
- </header>
+    <div class="max-w-6xl mx-auto bg-white/90 backdrop-blur-sm p-4 sm:p-6 rounded-xl shadow-2xl">
+        <div class="relative text-center mb-8 pt-8 pb-4">
+            <header class="mb-6">
+                <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-800 text-shadow-sm">🗓️ Calendario de Bienestar 👵</h1>
+                <p class="text-md sm:text-lg md:text-xl mt-2 text-slate-700 text-shadow-sm">Organiza tus citas médicas y cuida tu salud.</p>
+                <p class="text-sm mt-2 text-slate-600">ID de Usuario: <span id="userIdDisplay" class="font-semibold">Cargando...</span></p>
+            </header>
 
- <div id="bibleVerseCard" class="p-4 bg-black/60 backdrop-blur-md rounded-xl inline-block max-w-md sm:max-w-lg md:max-w-2xl mx-auto text-white">
- <div class="flex items-center justify-center">
- <i class="fas fa-book-open text-2xl sm:text-3xl mr-3 sm:mr-4"></i>
- <div>
- <p id="bibleVerseText" class="text-base sm:text-lg italic">"El Señor es mi pastor, nada me faltará."</p>
- <cite id="bibleVerseCite" class="block text-xs sm:text-sm opacity-90 mt-1">- Salmo 23:1</cite>
- </div>
- </div>
- </div>
- </div>
+            <div id="bibleVerseCard" class="p-4 bg-black/60 backdrop-blur-md rounded-xl inline-block max-w-md sm:max-w-lg md:max-w-2xl mx-auto text-white">
+                <div class="flex items-center justify-center">
+                    <i class="fas fa-book-open text-2xl sm:text-3xl mr-3 sm:mr-4"></i>
+                    <div>
+                        <p id="bibleVerseText" class="text-base sm:text-lg italic">"El Señor es mi pastor, nada me faltará."</p>
+                        <cite id="bibleVerseCite" class="block text-xs sm:text-sm opacity-90 mt-1">- Salmo 23:1</cite>
+                    </div>
+                </div>
+            </div>
+        </div>
 
- <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
- <div>
- <section id="calendar-section" class="mb-8 p-4 sm:p-6 bg-slate-50/80 backdrop-blur-sm rounded-lg shadow-lg">
- <div class="flex justify-between items-center mb-6">
- <button id="prevMonth" class="px-3 py-2 sm:px-4 btn-secondary rounded-lg hover:bg-slate-300 text-sm sm:text-base shadow hover:shadow-md transition-all"><i class="fas fa-chevron-left"></i> Mes Ant.</button>
- <h2 id="currentMonthYear" class="text-xl sm:text-2xl font-semibold text-blue-700 text-center mx-2"></h2>
- <button id="nextMonth" class="px-3 py-2 sm:px-4 btn-secondary rounded-lg hover:bg-slate-300 text-sm sm:text-base shadow hover:shadow-md transition-all">Mes Sig. <i class="fas fa-chevron-right"></i></button>
- </div>
- <div id="calendarGridHeader" class="grid grid-cols-7 gap-1 border-b border-slate-300 pb-2 mb-2">
- <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Lun</div>
- <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Mar</div>
- <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Mié</div>
- <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Jue</div>
- <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Vie</div>
- <div class="text-center font-semibold text-sky-600 py-2 text-xs sm:text-sm">Sáb</div>
- <div class="text-center font-semibold text-sky-600 py-2 text-xs sm:text-sm">Dom</div>
- </div>
- <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 p-1"></div>
- </section>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+            <div>
+                <section id="calendar-section" class="mb-8 p-4 sm:p-6 bg-slate-50/80 backdrop-blur-sm rounded-lg shadow-lg">
+                    <div class="flex justify-between items-center mb-6">
+                        <button id="prevMonth" class="px-3 py-2 sm:px-4 btn-secondary rounded-lg hover:bg-slate-300 text-sm sm:text-base shadow hover:shadow-md transition-all"><i class="fas fa-chevron-left"></i> Mes Ant.</button>
+                        <h2 id="currentMonthYear" class="text-xl sm:text-2xl font-semibold text-blue-700 text-center mx-2"></h2>
+                        <button id="nextMonth" class="px-3 py-2 sm:px-4 btn-secondary rounded-lg hover:bg-slate-300 text-sm sm:text-base shadow hover:shadow-md transition-all">Mes Sig. <i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div id="calendarGridHeader" class="grid grid-cols-7 gap-1 border-b border-slate-300 pb-2 mb-2">
+                        <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Lun</div>
+                        <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Mar</div>
+                        <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Mié</div>
+                        <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Jue</div>
+                        <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Vie</div>
+                        <div class="text-center font-semibold text-sky-600 py-2 text-xs sm:text-sm">Sáb</div>
+                        <div class="text-center font-semibold text-sky-600 py-2 text-xs sm:text-sm">Dom</div>
+                    </div>
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 p-1"></div>
+                </section>
 
- <section id="selected-day-info" class="bg-blue-50/80 backdrop-blur-sm p-4 sm:p-6 rounded-lg shadow-lg">
- <h3 class="text-lg sm:text-xl font-semibold text-blue-700 mb-3">Información para el <span id="selectedDateDisplay">Día Seleccionado</span></h3>
- <div id="appointmentsForDay" class="space-y-3 max-h-60 overflow-y-auto pr-2">
- <p class="text-slate-600">Selecciona un día en el calendario para ver las citas.</p>
- </div>
- <button id="openAddAppointmentModalButton" class="mt-4 px-4 py-2 btn-primary rounded-lg w-full md:w-auto text-sm sm:text-base shadow hover:shadow-md transition-all"><i class="fas fa-plus-circle mr-2"></i>Añadir Cita</button>
- </section>
- </div>
+                <section id="selected-day-info" class="bg-blue-50/80 backdrop-blur-sm p-4 sm:p-6 rounded-lg shadow-lg">
+                    <h3 class="text-lg sm:text-xl font-semibold text-blue-700 mb-3">Información para el <span id="selectedDateDisplay">Día Seleccionado</span></h3>
+                    <div id="appointmentsForDay" class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                        <p class="text-slate-600">Selecciona un día en el calendario para ver las citas.</p>
+                    </div>
+                    <button id="openAddAppointmentModalButton" class="mt-4 px-4 py-2 btn-primary rounded-lg w-full md:w-auto text-sm sm:text-base shadow hover:shadow-md transition-all"><i class="fas fa-plus-circle mr-2"></i>Añadir Cita</button>
+                </section>
+            </div>
 
- <div>
- <section id="blood-pressure-section" class="bg-sky-50/80 backdrop-blur-sm p-4 sm:p-6 rounded-lg shadow-lg">
- <h3 class="text-lg sm:text-xl font-semibold text-sky-700 mb-4"><i class="fas fa-heartbeat mr-2"></i>Registro de Tensión Arterial</h3>
- <button id="openAddBPModalButton" class="w-full px-4 py-2 mb-4 bg-sky-500 text-white rounded-lg hover:bg-sky-600 text-sm sm:text-base shadow hover:shadow-md transition-all"><i class="fas fa-plus-circle mr-2"></i>Añadir Toma de Tensión</button>
- <div id="bloodPressureLog" class="space-y-3 max-h-60 overflow-y-auto mb-6 pr-2">
- <p class="text-slate-600">Aún no hay registros de tensión.</p>
- </div>
- <div>
- <h4 class="text-md sm:text-lg font-semibold text-sky-700 mb-2">Evolución de la Tensión</h4>
- <div class="relative h-64 sm:h-72 bg-white/50 p-2 rounded-md">
- <canvas id="bpChart" class="rounded-lg"></canvas>
- </div>
- <p id="bpChartMessage" class="text-sm text-slate-500 mt-2 text-center"></p>
- </div>
- </section>
- </div>
- </div>
- </div>
+            <div>
+                <section id="blood-pressure-section" class="bg-sky-50/80 backdrop-blur-sm p-4 sm:p-6 rounded-lg shadow-lg">
+                    <h3 class="text-lg sm:text-xl font-semibold text-sky-700 mb-4"><i class="fas fa-heartbeat mr-2"></i>Registro de Tensión Arterial</h3>
+                    <button id="openAddBPModalButton" class="w-full px-4 py-2 mb-4 bg-sky-500 text-white rounded-lg hover:bg-sky-600 text-sm sm:text-base shadow hover:shadow-md transition-all"><i class="fas fa-plus-circle mr-2"></i>Añadir Toma de Tensión</button>
+                    <div id="bloodPressureLog" class="space-y-3 max-h-60 overflow-y-auto mb-6 pr-2">
+                        <p class="text-slate-600">Aún no hay registros de tensión.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-md sm:text-lg font-semibold text-sky-700 mb-2">Evolución de la Tensión</h4>
+                        <div class="relative h-64 sm:h-72 bg-white/50 p-2 rounded-md">
+                            <canvas id="bpChart" class="rounded-lg"></canvas>
+                        </div>
+                        <p id="bpChartMessage" class="text-sm text-slate-500 mt-2 text-center"></p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
 
- <!-- Modal para Añadir/Editar Cita -->
- <div id="appointmentModal" class="modal">
- <div class="modal-content">
- <span class="close-button" id="closeAppointmentModal">×</span>
- <h3 id="appointmentModalTitle" class="text-xl sm:text-2xl font-semibold mb-4 text-blue-700">Añadir Nueva Cita</h3>
- <form id="appointmentForm">
- <input type="hidden" id="appointmentId">
- <div class="mb-4">
- <label for="appointmentDate" class="block text-sm font-medium text-gray-700">Fecha:</label>
- <input type="date" id="appointmentDate" name="appointmentDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
- </div>
- <div class="mb-4">
- <label for="appointmentTime" class="block text-sm font-medium text-gray-700">Hora:</label>
- <input type="time" id="appointmentTime" name="appointmentTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
- </div>
- <div class="mb-4">
- <label for="appointmentType" class="block text-sm font-medium text-gray-700">Tipo de Cita:</label>
- <select id="appointmentType" name="appointmentType" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
- <option value="Hospital">Hospital</option>
- <option value="Médico de Cabecera">Médico de Cabecera</option>
- <option value="Cirujano">Especialista: Cirujano</option>
- <option value="Endocrino">Especialista: Endocrino</option>
- <option value="Enfermera (Tensión)">Enfermera (Tensión)</option>
- <option value="Otro Especialista">Otro Especialista</option>
- </select>
- </div>
- <div class="mb-4">
- <label for="appointmentNotes" class="block text-sm font-medium text-gray-700">Notas Adicionales:</label>
- <textarea id="appointmentNotes" name="appointmentNotes" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
- </div>
- <div class="flex justify-end space-x-3">
- <button type="button" id="cancelAppointment" class="px-4 py-2 btn-secondary rounded-lg text-sm sm:text-base">Cancelar</button>
- <button type="submit" class="px-4 py-2 btn-primary rounded-lg text-sm sm:text-base">Guardar Cita</button>
- </div>
- </form>
- </div>
- </div>
+    <!-- Modal para Añadir/Editar Cita -->
+    <div id="appointmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeAppointmentModal">×</span>
+            <h3 id="appointmentModalTitle" class="text-xl sm:text-2xl font-semibold mb-4 text-blue-700">Añadir Nueva Cita</h3>
+            <form id="appointmentForm">
+                <input type="hidden" id="appointmentId">
+                <div class="mb-4">
+                    <label for="appointmentDate" class="block text-sm font-medium text-gray-700">Fecha:</label>
+                    <input type="date" id="appointmentDate" name="appointmentDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                </div>
+                <div class="mb-4">
+                    <label for="appointmentTime" class="block text-sm font-medium text-gray-700">Hora:</label>
+                    <input type="time" id="appointmentTime" name="appointmentTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                </div>
+                <div class="mb-4">
+                    <label for="appointmentType" class="block text-sm font-medium text-gray-700">Tipo de Cita:</label>
+                    <select id="appointmentType" name="appointmentType" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                        <option value="Hospital">Hospital</option>
+                        <option value="Médico de Cabecera">Médico de Cabecera</option>
+                        <option value="Cirujano">Especialista: Cirujano</option>
+                        <option value="Endocrino">Especialista: Endocrino</option>
+                        <option value="Enfermera (Tensión)">Enfermera (Tensión)</option>
+                        <option value="Otro Especialista">Otro Especialista</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="appointmentNotes" class="block text-sm font-medium text-gray-700">Notas Adicionales:</label>
+                    <textarea id="appointmentNotes" name="appointmentNotes" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelAppointment" class="px-4 py-2 btn-secondary rounded-lg text-sm sm:text-base">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 btn-primary rounded-lg text-sm sm:text-base">Guardar Cita</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
- <!-- Modal para Añadir Toma de Tensión -->
- <div id="bpModal" class="modal">
- <div class="modal-content">
- <span class="close-button" id="closeBPModal">×</span>
- <h3 class="text-xl sm:text-2xl font-semibold mb-4 text-sky-700">Añadir Toma de Tensión</h3>
- <form id="bpForm">
- <div class="mb-4">
- <label for="bpDate" class="block text-sm font-medium text-gray-700">Fecha:</label>
- <input type="date" id="bpDate" name="bpDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required>
- </div>
- <div class="mb-4">
- <label for="bpTime" class="block text-sm font-medium text-gray-700">Hora:</label>
- <input type="time" id="bpTime" name="bpTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required>
- </div>
- <div class="grid grid-cols-2 gap-4 mb-4">
- <div>
- <label for="bpSystolic" class="block text-sm font-medium text-gray-700">Sistólica (Alta):</label>
- <input type="number" id="bpSystolic" name="bpSystolic" placeholder="Ej: 120" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required>
- </div>
- <div>
- <label for="bpDiastolic" class="block text-sm font-medium text-gray-700">Diastólica (Baja):</label>
- <input type="number" id="bpDiastolic" name="bpDiastolic" placeholder="Ej: 80" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required>
- </div>
- </div>
- <div class="mb-4">
- <label for="bpPulse" class="block text-sm font-medium text-gray-700">Pulso (opcional):</label>
- <input type="number" id="bpPulse" name="bpPulse" placeholder="Ej: 70" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
- </div>
- <div class="mb-4">
- <label for="bpNotes" class="block text-sm font-medium text-gray-700">Notas (opcional):</label>
- <textarea id="bpNotes" name="bpNotes" rows="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"></textarea>
- </div>
- <div class="flex justify-end space-x-3">
- <button type="button" id="cancelBP" class="px-4 py-2 btn-secondary rounded-lg text-sm sm:text-base">Cancelar</button>
- <button type="submit" class="px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 text-sm sm:text-base">Guardar Toma</button>
- </div>
- </form>
- </div>
- </div>
+    <!-- Modal para Añadir Toma de Tensión -->
+    <div id="bpModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeBPModal">×</span>
+            <h3 class="text-xl sm:text-2xl font-semibold mb-4 text-sky-700">Añadir Toma de Tensión</h3>
+            <form id="bpForm">
+                <div class="mb-4">
+                    <label for="bpDate" class="block text-sm font-medium text-gray-700">Fecha:</label>
+                    <input type="date" id="bpDate" name="bpDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required>
+                </div>
+                <div class="mb-4">
+                    <label for="bpTime" class="block text-sm font-medium text-gray-700">Hora:</label>
+                    <input type="time" id="bpTime" name="bpTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="bpSystolic" class="block text-sm font-medium text-gray-700">Sistólica (Alta):</label>
+                        <input type="number" id="bpSystolic" name="bpSystolic" placeholder="Ej: 120" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required>
+                    </div>
+                    <div>
+                        <label for="bpDiastolic" class="block text-sm font-medium text-gray-700">Diastólica (Baja):</label>
+                        <input type="number" id="bpDiastolic" name="bpDiastolic" placeholder="Ej: 80" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="bpPulse" class="block text-sm font-medium text-gray-700">Pulso (opcional):</label>
+                    <input type="number" id="bpPulse" name="bpPulse" placeholder="Ej: 70" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="bpNotes" class="block text-sm font-medium text-gray-700">Notas (opcional):</label>
+                    <textarea id="bpNotes" name="bpNotes" rows="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelBP" class="px-4 py-2 btn-secondary rounded-lg text-sm sm:text-base">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 text-sm sm:text-base">Guardar Toma</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
- <!-- Modal de Confirmación de Eliminación -->
- <div id="confirmDeleteModal" class="modal">
- <div class="modal-content">
- <h3 class="text-lg sm:text-xl font-semibold mb-4">Confirmar Eliminación</h3>
- <p id="confirmDeleteMessage">¿Estás seguro de que quieres eliminar este elemento?</p>
- <div class="flex justify-end space-x-3 mt-6">
- <button id="cancelDeleteButton" class="px-4 py-2 btn-secondary rounded-lg text-sm sm:text-base">Cancelar</button>
- <button id="confirmDeleteButton" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm sm:text-base">Eliminar</button>
- </div>
- </div>
- </div>
+    <!-- Modal de Confirmación de Eliminación -->
+    <div id="confirmDeleteModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg sm:text-xl font-semibold mb-4">Confirmar Eliminación</h3>
+            <p id="confirmDeleteMessage">¿Estás seguro de que quieres eliminar este elemento?</p>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button id="cancelDeleteButton" class="px-4 py-2 btn-secondary rounded-lg text-sm sm:text-base">Cancelar</button>
+                <button id="confirmDeleteButton" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm sm:text-base">Eliminar</button>
+            </div>
+        </div>
+    </div>
 
- <script type="module">
- // Importaciones de Firebase
- import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
- import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
- import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
- import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    <script type="module">
+        // Importaciones de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 
- // Configuración de Firebase
- const firebaseConfigFromGlobal = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
- const firebaseConfig = firebaseConfigFromGlobal || {
- apiKey: "AIzaSyCB_GtOMByc22KD__hd0dp1Y1XijFehCtE",
- authDomain: "abuapp-ed946.firebaseapp.com",
- databaseURL: "https://abuapp-ed946-default-rtdb.europe-west1.firebasedatabase.app",
- projectId: "abuapp-ed946",
- storageBucket: "abuapp-ed946.firebasestorage.app",
- messagingSenderId: "144970687143",
- appId: "1:144970687143:web:35ad5f75b89af8d2c4f182"
- };
+        // Configuración de Firebase
+        const firebaseConfigFromGlobal = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const firebaseConfig = firebaseConfigFromGlobal || {
+            apiKey: "AIzaSyCB_GtOMByc22KD__hd0dp1Y1XijFehCtE",
+            authDomain: "abuapp-ed946.firebaseapp.com",
+            databaseURL: "https://abuapp-ed946-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "abuapp-ed946",
+            storageBucket: "abuapp-ed946.firebasestorage.app",
+            messagingSenderId: "144970687143",
+            appId: "1:144970687143:web:35ad5f75b89af8d2c4f182"
+        };
 
- const appId = typeof __app_id !== 'undefined' ? __app_id : 'calendario-bienestar-default';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'calendario-bienestar-default';
 
- // Inicializar Firebase
- const app = initializeApp(firebaseConfig);
- const db = getFirestore(app);
- const auth = getAuth(app);
- setLogLevel('debug');
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        setLogLevel('debug');
 
- // Nota: Configura las reglas de Firestore en Firebase Console:
- /*
- rules_version = '2';
- service cloud.firestore {
- match /databases/{database}/documents {
- match /artifacts/{appId}/users/{userId}/{document=**} {
- allow read, write: if request.auth != null && request.auth.uid == userId;
- }
- }
- }
- */
+        // Nota: Configura las reglas de Firestore en Firebase Console:
+        /*
+        rules_version = '2';
+        service cloud.firestore {
+          match /databases/{database}/documents {
+            match /artifacts/{appId}/users/{userId}/{document=**} {
+              allow read, write: if request.auth != null && request.auth.uid == userId;
+            }
+          }
+        }
+        */
 
- // Variables globales
- let currentYear, currentMonth;
- let selectedDate = null;
- let userId = null;
- let appointments = [];
- let bloodPressureReadings = [];
- let bpChartInstance = null;
- let unsubscribeAppointments = () => {};
- let unsubscribeBPReadings = () => {};
+        // Variables globales
+        let currentYear, currentMonth;
+        let selectedDate = null;
+        let userId = null;
+        let appointments = [];
+        let bloodPressureReadings = [];
+        let bpChartInstance = null;
+        let unsubscribeAppointments = () => {};
+        let unsubscribeBPReadings = () => {};
 
- // Elementos del DOM
- const calendarGrid = document.getElementById('calendarGrid');
- const currentMonthYearDisplay = document.getElementById('currentMonthYear');
- const prevMonthButton = document.getElementById('prevMonth');
- const nextMonthButton = document.getElementById('nextMonth');
- const selectedDateDisplay = document.getElementById('selectedDateDisplay');
- const appointmentsForDay = document.getElementById('appointmentsForDay');
- const bloodPressureLog = document.getElementById('bloodPressureLog');
- const bibleVerseText = document.getElementById('bibleVerseText');
- const bibleVerseCite = document.getElementById('bibleVerseCite');
- const userIdDisplay = document.getElementById('userIdDisplay');
- const loadingIndicator = document.getElementById('loading-indicator');
- const bpChartCanvas = document.getElementById('bpChart').getContext('2d');
- const bpChartMessage = document.getElementById('bpChartMessage');
+        // Elementos del DOM
+        const calendarGrid = document.getElementById('calendarGrid');
+        const currentMonthYearDisplay = document.getElementById('currentMonthYear');
+        const prevMonthButton = document.getElementById('prevMonth');
+        const nextMonthButton = document.getElementById('nextMonth');
+        const selectedDateDisplay = document.getElementById('selectedDateDisplay');
+        const appointmentsForDay = document.getElementById('appointmentsForDay');
+        const bloodPressureLog = document.getElementById('bloodPressureLog');
+        const bibleVerseText = document.getElementById('bibleVerseText');
+        const bibleVerseCite = document.getElementById('bibleVerseCite');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const bpChartCanvas = document.getElementById('bpChart').getContext('2d');
+        const bpChartMessage = document.getElementById('bpChartMessage');
 
- // Modales y Formularios
- const appointmentModal = document.getElementById('appointmentModal');
- const bpModal = document.getElementById('bpModal');
- const confirmDeleteModal = document.getElementById('confirmDeleteModal');
- const appointmentForm = document.getElementById('appointmentForm');
- const bpForm = document.getElementById('bpForm');
+        // Modales y Formularios
+        const appointmentModal = document.getElementById('appointmentModal');
+        const bpModal = document.getElementById('bpModal');
+        const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+        const appointmentForm = document.getElementById('appointmentForm');
+        const bpForm = document.getElementById('bpForm');
 
- // Botones
- const openAddAppointmentModalButton = document.getElementById('openAddAppointmentModalButton');
- const openAddBPModalButton = document.getElementById('openAddBPModalButton');
- const closeAppointmentModalButton = document.getElementById('closeAppointmentModal');
- const closeBPModalButton = document.getElementById('closeBPModal');
- const cancelAppointmentButton = document.getElementById('cancelAppointment');
- const cancelBPButton = document.getElementById('cancelBP');
- const cancelDeleteButton = document.getElementById('cancelDeleteButton');
- const confirmDeleteButton = document.getElementById('confirmDeleteButton');
- let deleteFunction = null;
+        // Botones
+        const openAddAppointmentModalButton = document.getElementById('openAddAppointmentModalButton');
+        const openAddBPModalButton = document.getElementById('openAddBPModalButton');
+        const closeAppointmentModalButton = document.getElementById('closeAppointmentModal');
+        const closeBPModalButton = document.getElementById('closeBPModal');
+        const cancelAppointmentButton = document.getElementById('cancelAppointment');
+        const cancelBPButton = document.getElementById('cancelBP');
+        const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+        const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+        let deleteFunction = null;
 
- // --- Utilidades ---
- function showLoading(message = "Cargando...") {
- const loadingTextElement = loadingIndicator.querySelector('div:not(.spinner)');
- if (loadingTextElement) loadingTextElement.textContent = message;
- loadingIndicator.classList.remove('hidden');
- loadingIndicator.style.display = 'flex';
- }
+        // --- Utilidades ---
+        function showLoading(message = "Cargando...") {
+            const loadingTextElement = loadingIndicator.querySelector('div:not(.spinner)');
+            if (loadingTextElement) loadingTextElement.textContent = message;
+            loadingIndicator.classList.remove('hidden');
+            loadingIndicator.style.display = 'flex';
+        }
 
- function hideLoading() {
- loadingIndicator.classList.add('hidden');
- loadingIndicator.style.display = 'none';
- }
+        function hideLoading() {
+            loadingIndicator.classList.add('hidden');
+            loadingIndicator.style.display = 'none';
+        }
 
- function openModal(modalElement) { modalElement.style.display = 'flex'; }
- function closeModal(modalElement) { modalElement.style.display = 'none'; }
+        function openModal(modalElement) { modalElement.style.display = 'flex'; }
+        function closeModal(modalElement) { modalElement.style.display = 'none'; }
 
- function openConfirmDeleteModal(message, callback) {
- document.getElementById('confirmDeleteMessage').textContent = message;
- deleteFunction = callback;
- openModal(confirmDeleteModal);
- }
+        function openConfirmDeleteModal(message, callback) {
+            document.getElementById('confirmDeleteMessage').textContent = message;
+            deleteFunction = callback;
+            openModal(confirmDeleteModal);
+        }
 
- // --- Autenticación y Carga Inicial ---
- async function initializeAppAuth() {
- showLoading("Autenticando...");
- try {
- await setPersistence(auth, browserLocalPersistence);
- const authToken = typeof __initial_auth_token !== 'undefined' ? __initial _auth_token : null;
- if (authToken) {
- console.log("Intentando signInWithCustomToken con token:", authToken);
- await signInWithCustomToken(auth, authToken);
- } else {
- console.log("No hay token personalizado, intentando signInAnonymously...");
- await signInAnonymously(auth);
- }
- monitorFirestoreConnection();
- } catch (error) {
- console.error("Error en autenticación inicial:", error);
- alert(`Error de autenticación: ${error.message}`);
- if (error.code === 'auth/invalid-custom-token' || error.code === 'auth/custom-token-mismatch') {
- console.log("Token personalizado inválido, intentando signInAnonymously...");
- try {
- await signInAnonymously(auth);
- monitorFirestoreConnection();
- } catch (e) {
- console.error("Error en signInAnonymously:", e);
- alert(`Error en autenticación anónima: ${e.message}`);
- }
- }
- }
+        // --- Autenticación y Carga Inicial ---
+        async function initializeAppAuth() {
+            showLoading("Autenticando...");
+            try {
+                await setPersistence(auth, browserLocalPersistence);
+                const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (authToken) {
+                    console.log("Intentando signInWithCustomToken con token:", authToken);
+                    await signInWithCustomToken(auth, authToken);
+                } else {
+                    console.log("No hay token personalizado, intentando signInAnonymously...");
+                    await signInAnonymously(auth);
+                }
+                monitorFirestoreConnection();
+            } catch (error) {
+                console.error("Error en autenticación inicial:", error);
+                alert(`Error de autenticación: ${error.message}`);
+                if (error.code === 'auth/invalid-custom-token' || error.code === 'auth/custom-token-mismatch') {
+                    console.log("Token personalizado inválido, intentando signInAnonymously...");
+                    try {
+                        await signInAnonymously(auth);
+                        monitorFirestoreConnection();
+                    } catch (e) {
+                        console.error("Error en signInAnonymously:", e);
+                        alert(`Error en autenticación anónima: ${e.message}`);
+                    }
+                }
+            }
 
- onAuthStateChanged(auth, async (user) => {
- if (user) {
- userId = user.uid;
- userIdDisplay.textContent = userId;
- console.log("Usuario autenticado:", userId);
- await loadInitialData();
- } else {
- userId = null;
- userIdDisplay.textContent = "No autenticado";
- console.log("Usuario no autenticado.");
- appointments = [];
- bloodPressureReadings = [];
- renderCalendar();
- renderAppointmentsForDay();
- renderBloodPressureLog();
- renderBPChart();
- hideLoading();
- }
- });
- }
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    userIdDisplay.textContent = userId;
+                    console.log("Usuario autenticado:", userId);
+                    await loadInitialData();
+                } else {
+                    userId = null;
+                    userIdDisplay.textContent = "No autenticado";
+                    console.log("Usuario no autenticado.");
+                    appointments = [];
+                    bloodPressureReadings = [];
+                    renderCalendar();
+                    renderAppointmentsForDay();
+                    renderBloodPressureLog();
+                    renderBPChart();
+                    hideLoading();
+                }
+            });
+        }
 
- function monitorFirestoreConnection() {
- const statusRef = doc(db, '.info/connected');
- onSnapshot(statusRef, (snap) => {
- const isConnected = snap.data()?.connected || false;
- console.log("Estado de conexión a Firestore:", isConnected ? "Conectado" : "Desconectado");
- if (!isConnected) {
- alert("Advertencia: No hay conexión con la base de datos. Los datos se guardarán localmente y se sincronizarán cuando la conexión se restablezca.");
- }
- }, (error) => {
- console.error("Error al monitorear conexión:", error);
- alert(`Error al verificar conexión con la base de datos: ${error.message}`);
- });
- }
+        function monitorFirestoreConnection() {
+            const statusRef = doc(db, '.info/connected');
+            onSnapshot(statusRef, (snap) => {
+                const isConnected = snap.data()?.connected || false;
+                console.log("Estado de conexión a Firestore:", isConnected ? "Conectado" : "Desconectado");
+                if (!isConnected) {
+                    alert("Advertencia: No hay conexión con la base de datos. Los datos se guardarán localmente y se sincronizarán cuando la conexión se restablezca.");
+                }
+            }, (error) => {
+                console.error("Error al monitorear conexión:", error);
+                alert(`Error al verificar conexión con la base de datos: ${error.message}`);
+            });
+        }
 
- async function loadInitialData() {
- if (!userId) {
- hideLoading();
- return;
- }
- showLoading("Cargando datos...");
- const today = new Date();
- currentYear = today.getFullYear();
- currentMonth = today.getMonth();
- selectedDate = today.toISOString().split('T')[0];
- await fetchBibleVerse();
- setupEventListeners();
- unsubscribeAppointments();
- unsubscribeBPReadings();
- subscribeToAppointments();
- subscribeToBloodPressureReadings();
- }
+        async function loadInitialData() {
+            if (!userId) {
+                hideLoading();
+                return;
+            }
+            showLoading("Cargando datos...");
+            const today = new Date();
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth();
+            selectedDate = today.toISOString().split('T')[0];
+            await fetchBibleVerse();
+            setupEventListeners();
+            unsubscribeAppointments();
+            unsubscribeBPReadings();
+            subscribeToAppointments();
+            subscribeToBloodPressureReadings();
+        }
 
- // --- Versículo Bíblico ---
- async function fetchBibleVerse() {
- const verses = [
- { text: "El Señor es mi pastor, nada me faltará.", cite: "Salmo 23:1" },
- { text: "Todo lo puedo en Cristo que me fortalece.", cite: "Filipenses 4:13" },
- { text: "Porque donde esté vuestro tesoro, allí estará también vuestro corazón.", cite: "Mateo 6:21" },
- { text: "Encomienda a Jehová tus obras, Y tus pensamientos serán afirmados.", cite: "Proverbios 16:3" },
- { text: "El amor es paciente, es bondadoso. El amor no es envidioso ni jactancioso ni orgulloso.", cite: "1 Corintios 13:4" }
- ];
- try {
- const randomVerse = verses[Math.floor(Math.random() * verses.length)];
- bibleVerseText.textContent = `"${randomVerse.text}"`;
- bibleVerseCite.textContent = `- ${randomVerse.cite}`;
- } catch (error) {
- console.warn("Error al cargar versículo:", error);
- bibleVerseText.textContent = `"Confía en el Señor con todo tu corazón."`;
- bibleVerseCite.textContent = `- Proverbios 3:5`;
- }
- }
+        // --- Versículo Bíblico ---
+        async function fetchBibleVerse() {
+            const verses = [
+                { text: "El Señor es mi pastor, nada me faltará.", cite: "Salmo 23:1" },
+                { text: "Todo lo puedo en Cristo que me fortalece.", cite: "Filipenses 4:13" },
+                { text: "Porque donde esté vuestro tesoro, allí estará también vuestro corazón.", cite: "Mateo 6:21" },
+                { text: "Encomienda a Jehová tus obras, Y tus pensamientos serán afirmados.", cite: "Proverbios 16:3" },
+                { text: "El amor es paciente, es bondadoso. El amor no es envidioso ni jactancioso ni orgulloso.", cite: "1 Corintios 13:4" }
+            ];
+            try {
+                const randomVerse = verses[Math.floor(Math.random() * verses.length)];
+                bibleVerseText.textContent = `"${randomVerse.text}"`;
+                bibleVerseCite.textContent = `- ${randomVerse.cite}`;
+            } catch (error) {
+                console.warn("Error al cargar versículo:", error);
+                bibleVerseText.textContent = `"Confía en el Señor con todo tu corazón."`;
+                bibleVerseCite.textContent = `- Proverbios 3:5`;
+            }
+        }
 
- // --- Event Listeners ---
- function setupEventListeners() {
- prevMonthButton.addEventListener('click', () => {
- currentMonth--;
- if (currentMonth < 0) {
- currentMonth = 11;
- currentYear--;
- }
- renderCalendar();
- });
- nextMonthButton.addEventListener('click', () => {
- currentMonth++;
- if (currentMonth > 11) {
- currentMonth = 0;
- currentYear++;
- }
- renderCalendar();
- });
- openAddAppointmentModalButton.addEventListener('click', () => {
- appointmentForm.reset();
- document.getElementById('appointmentId').value = '';
- document.getElementById('appointmentModalTitle').textContent = "Añadir Nueva Cita";
- document.getElementById('appointmentDate').value = selectedDate || new Date().toISOString().split('T')[0];
- document.getElementById('appointmentTime').value = new Date().toTimeString().substring(0, 5);
- openModal(appointmentModal);
- });
- openAddBPModalButton.addEventListener('click', () => {
- bpForm.reset();
- document.getElementById('bpDate').value = new Date().toISOString().split('T')[0];
- document.getElementById('bpTime').value = new Date().toTimeString().substring(0, 5);
- openModal(bpModal);
- });
- closeAppointmentModalButton.addEventListener('click', () => closeModal(appointmentModal));
- closeBPModalButton.addEventListener('click', () => closeModal(bpModal));
- cancelAppointmentButton.addEventListener('click', () => closeModal(appointmentModal));
- cancelBPButton.addEventListener('click', () => closeModal(bpModal));
- appointmentForm.addEventListener('submit', saveAppointment);
- bpForm.addEventListener('submit', saveBPReading);
- cancelDeleteButton.addEventListener('click', () => closeModal(confirmDeleteModal));
- confirmDeleteButton.addEventListener('click', () => {
- if (deleteFunction) deleteFunction();
- closeModal(confirmDeleteModal);
- });
- }
+        // --- Event Listeners ---
+        function setupEventListeners() {
+            prevMonthButton.addEventListener('click', () => {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                renderCalendar();
+            });
+            nextMonthButton.addEventListener('click', () => {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                renderCalendar();
+            });
+            openAddAppointmentModalButton.addEventListener('click', () => {
+                appointmentForm.reset();
+                document.getElementById('appointmentId').value = '';
+                document.getElementById('appointmentModalTitle').textContent = "Añadir Nueva Cita";
+                document.getElementById('appointmentDate').value = selectedDate || new Date().toISOString().split('T')[0];
+                document.getElementById('appointmentTime').value = new Date().toTimeString().substring(0, 5);
+                openModal(appointmentModal);
+            });
+            openAddBPModalButton.addEventListener('click', () => {
+                bpForm.reset();
+                document.getElementById('bpDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('bpTime').value = new Date().toTimeString().substring(0, 5);
+                openModal(bpModal);
+            });
+            closeAppointmentModalButton.addEventListener('click', () => closeModal(appointmentModal));
+            closeBPModalButton.addEventListener('click', () => closeModal(bpModal));
+            cancelAppointmentButton.addEventListener('click', () => closeModal(appointmentModal));
+            cancelBPButton.addEventListener('click', () => closeModal(bpModal));
+            appointmentForm.addEventListener('submit', saveAppointment);
+            bpForm.addEventListener('submit', saveBPReading);
+            cancelDeleteButton.addEventListener('click', () => closeModal(confirmDeleteModal));
+            confirmDeleteButton.addEventListener('click', () => {
+                if (deleteFunction) deleteFunction();
+                closeModal(confirmDeleteModal);
+            });
+        }
 
- // --- Calendario ---
- function renderCalendar() {
- if (!userId) {
- calendarGrid.innerHTML = '<p class="text-red-600 col-span-7 text-center">Autenticación requerida para mostrar el calendario.</p>';
- return;
- }
- showLoading("Actualizando calendario...");
- calendarGrid.innerHTML = '';
- const todayObj = new Date();
- const todayDateStr = todayObj.toISOString().split('T')[0];
- const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
- const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
- const daysInMonth = lastDayOfMonth.getDate();
- let startDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
+        // --- Calendario ---
+        function renderCalendar() {
+            if (!userId) {
+                calendarGrid.innerHTML = '<p class="text-red-600 col-span-7 text-center">Autenticación requerida para mostrar el calendario.</p>';
+                return;
+            }
+            showLoading("Actualizando calendario...");
+            calendarGrid.innerHTML = '';
+            const todayObj = new Date();
+            const todayDateStr = todayObj.toISOString().split('T')[0];
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+            const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+            const daysInMonth = lastDayOfMonth.getDate();
+            let startDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
 
- currentMonthYearDisplay.textContent = `${firstDayOfMonth.toLocaleString('es-ES', { month: 'long' })} ${currentYear}`;
+            currentMonthYearDisplay.textContent = `${firstDayOfMonth.toLocaleString('es-ES', { month: 'long' })} ${currentYear}`;
 
- for (let i = 0; i < startDayOfWeek; i++) {
- calendarGrid.appendChild(document.createElement('div'));
- }
+            for (let i = 0; i < startDayOfWeek; i++) {
+                calendarGrid.appendChild(document.createElement('div'));
+            }
 
- for (let day = 1; day <= daysInMonth; day++) {
- const dayCell = document.createElement('div');
- const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
- const currentDateObj = new Date(dateStr + "T00:00:00");
- const dayOfWeek = (currentDateObj.getDay() + 6) % 7;
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const currentDateObj = new Date(dateStr + "T00:00:00");
+                const dayOfWeek = (currentDateObj.getDay() + 6) % 7;
 
- let cellClasses = ['calendar-day', 'relative', 'p-2', 'h-16', 'sm:h-20', 'text-center', 'cursor-pointer', 'rounded-lg', 'text-sm', 'flex', 'items-center', 'justify-center'];
- cellClasses.push('bg-white', 'text-gray-700', 'hover:bg-blue-100');
- dayCell.textContent = day;
- dayCell.dataset.date = dateStr;
- dayCell.className = cellClasses.join(' ');
+                let cellClasses = ['calendar-day', 'relative', 'p-2', 'h-16', 'sm:h-20', 'text-center', 'cursor-pointer', 'rounded-lg', 'text-sm', 'flex', 'items-center', 'justify-center'];
+                cellClasses.push('bg-white', 'text-gray-700', 'hover:bg-blue-100');
+                dayCell.textContent = day;
+                dayCell.dataset.date = dateStr;
+                dayCell.className = cellClasses.join(' ');
 
- if (dayOfWeek === 5 || dayOfWeek === 6) {
- dayCell.classList.add('weekend-day');
- if (dateStr !== selectedDate) dayCell.classList.remove('hover:bg-blue-100');
- }
+                if (dayOfWeek === 5 || dayOfWeek === 6) {
+                    dayCell.classList.add('weekend-day');
+                    if (dateStr !== selectedDate) dayCell.classList.remove('hover:bg-blue-100');
+                }
 
- if (dateStr === todayDateStr) {
- dayCell.classList.add('today');
- if (dateStr !== selectedDate) {
- dayCell.classList.remove('hover:bg-blue-100');
- }
- }
+                if (dateStr === todayDateStr) {
+                    dayCell.classList.add('today');
+                    if (dateStr !== selectedDate) {
+                        dayCell.classList.remove('hover:bg-blue-100');
+                    }
+                }
 
- const dayAppointments = appointments.filter(app => app.date === dateStr);
- if (dayAppointments.length > 0) {
- dayCell.classList.add('has-appointment');
- const types = dayAppointments.map(app => app.type.toLowerCase());
- if (types.includes('hospital')) {
- dayCell.classList.add('hospital');
- } else if (types.includes('médico de cabecera')) {
- dayCell.classList.add('doctor');
- } else if (types.includes('cirujano')) {
- dayCell.classList.add('surgeon');
- } else if (types.includes('endocrino')) {
- dayCell.classList.add('endocrino');
- } else if (types.includes('enfermera (tensión)')) {
- dayCell.classList.add('nurse');
- } else {
- dayCell.classList.add('other');
- }
- }
+                const dayAppointments = appointments.filter(app => app.date === dateStr);
+                if (dayAppointments.length > 0) {
+                    dayCell.classList.add('has-appointment');
+                    const types = dayAppointments.map(app => app.type.toLowerCase());
+                    if (types.includes('hospital')) {
+                        dayCell.classList.add('hospital');
+                    } else if (types.includes('médico de cabecera')) {
+                        dayCell.classList.add('doctor');
+                    } else if (types.includes('cirujano')) {
+                        dayCell.classList.add('surgeon');
+                    } else if (types.includes('endocrino')) {
+                        dayCell.classList.add('endocrino');
+                    } else if (types.includes('enfermera (tensión)')) {
+                        dayCell.classList.add('nurse');
+                    } else {
+                        dayCell.classList.add('other');
+                    }
+                }
 
- if (dateStr === selectedDate) {
- dayCell.classList.remove('bg-white', 'text-gray-700', 'hover:bg-blue-100', 'weekend-day', 'today');
- dayCell.classList.add('selected');
- }
+                if (dateStr === selectedDate) {
+                    dayCell.classList.remove('bg-white', 'text-gray-700', 'hover:bg-blue-100', 'weekend-day', 'today');
+                    dayCell.classList.add('selected');
+                }
 
- dayCell.addEventListener('click', () => {
- selectedDate = dateStr;
- renderCalendar();
- renderAppointmentsForDay();
- updateSelectedDateDisplay();
- });
- calendarGrid.appendChild(dayCell);
- }
- updateSelectedDateDisplay();
- renderAppointmentsForDay();
- hideLoading();
- }
+                dayCell.addEventListener('click', () => {
+                    selectedDate = dateStr;
+                    renderCalendar();
+                    renderAppointmentsForDay();
+                    updateSelectedDateDisplay();
+                });
+                calendarGrid.appendChild(dayCell);
+            }
+            updateSelectedDateDisplay();
+            renderAppointmentsForDay();
+            hideLoading();
+        }
 
- function updateSelectedDateDisplay() {
- if (selectedDate) {
- const dateObj = new Date(selectedDate + 'T00:00:00');
- selectedDateDisplay.textContent = dateObj.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
- } else {
- selectedDateDisplay.textContent = "Ningún día seleccionado";
- }
- }
+        function updateSelectedDateDisplay() {
+            if (selectedDate) {
+                const dateObj = new Date(selectedDate + 'T00:00:00');
+                selectedDateDisplay.textContent = dateObj.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            } else {
+                selectedDateDisplay.textContent = "Ningún día seleccionado";
+            }
+        }
 
- // --- Citas ---
- function subscribeToAppointments() {
- if (!userId) {
- console.warn("No hay userId para suscripción de citas.");
- appointmentsForDay.innerHTML = '<p class="text-slate-600">Autenticación requerida.</p>';
- return;
- }
- const appointmentsCol = collection(db, `artifacts/${appId}/users/${userId}/appointments`);
- const q = query(appointmentsCol);
- unsubscribeAppointments = onSnapshot(q, (snapshot) => {
- showLoading("Actualizando citas...");
- appointments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
- appointments.sort((a, b) => new Date(`${a.date}T${a.time || '00:00'}`) - new Date(`${b.date}T${b.time || '00:00'}`));
- renderCalendar();
- renderAppointmentsForDay();
- hideLoading();
- }, (error) => {
- console.error("Error en suscripción de citas:", error);
- alert(`Error al cargar citas: ${error.message}`);
- appointmentsForDay.innerHTML = '<p class="text-red-600">Error al cargar citas. Por favor, intenta de nuevo.</p>';
- hideLoading();
- });
- }
+        // --- Citas ---
+        function subscribeToAppointments() {
+            if (!userId) {
+                console.warn("No hay userId para suscripción de citas.");
+                appointmentsForDay.innerHTML = '<p class="text-slate-600">Autenticación requerida.</p>';
+                return;
+            }
+            const appointmentsCol = collection(db, `artifacts/${appId}/users/${userId}/appointments`);
+            const q = query(appointmentsCol);
+            unsubscribeAppointments = onSnapshot(q, (snapshot) => {
+                showLoading("Actualizando citas...");
+                appointments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                appointments.sort((a, b) => new Date(`${a.date}T${a.time || '00:00'}`) - new Date(`${b.date}T${b.time || '00:00'}`));
+                renderCalendar();
+                renderAppointmentsForDay();
+                hideLoading();
+            }, (error) => {
+                console.error("Error en suscripción de citas:", error);
+                alert(`Error al cargar citas: ${error.message}`);
+                appointmentsForDay.innerHTML = '<p class="text-red-600">Error al cargar citas. Por favor, intenta de nuevo.</p>';
+                hideLoading();
+            });
+        }
 
- function renderAppointmentsForDay() {
- if (!selectedDate || !userId) {
- appointmentsForDay.innerHTML = '<p class="text-slate-600">Selecciona un día o autentícate.</p>';
- return;
- }
- const dayApps = appointments.filter(app => app.date === selectedDate);
- if (dayApps.length === 0) {
- appointmentsForDay.innerHTML = '<p class="text-slate-600">No hay citas este día.</p>';
- return;
- }
- appointmentsForDay.innerHTML = dayApps.map(app => `
- <div class="p-3 bg-white rounded-md shadow border-l-4 ${getAppointmentColor(app.type)}">
- <div class="flex justify-between items-start">
- <div>
- <h4 class="font-semibold text-sm">${app.type}</h4>
- <p class="text-xs text-gray-600">${app.time || 'Sin hora'}</p>
- ${app.notes ? `<p class="text-xs text-gray-500 mt-1">${app.notes}</p>` : ''}
- </div>
- <div class="flex-shrink-0">
- <button class="edit-appointment text-blue-500 hover:text-blue-700 mr-2 p-1" data-id="${app.id}"><i class="fas fa-edit"></i></button>
- <button class="delete-appointment text-red-500 hover:text-red-700 p-1" data-id="${app.id}"><i class="fas fa-trash-alt"></i></button>
- </div>
- </div>
- </div>`).join('');
- appointmentsForDay.querySelectorAll('.edit-appointment').forEach(b => b.addEventListener('click', (e) => handleEditAppointment(e.currentTarget.dataset.id)));
- appointmentsForDay.querySelectorAll('.delete-appointment').forEach(b => b.addEventListener('click', (e) => handleDeleteAppointment(e.currentTarget.dataset.id)));
- }
+        function renderAppointmentsForDay() {
+            if (!selectedDate || !userId) {
+                appointmentsForDay.innerHTML = '<p class="text-slate-600">Selecciona un día o autentícate.</p>';
+                return;
+            }
+            const dayApps = appointments.filter(app => app.date === selectedDate);
+            if (dayApps.length === 0) {
+                appointmentsForDay.innerHTML = '<p class="text-slate-600">No hay citas este día.</p>';
+                return;
+            }
+            appointmentsForDay.innerHTML = dayApps.map(app => `
+                <div class="p-3 bg-white rounded-md shadow border-l-4 ${getAppointmentColor(app.type)}">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-sm">${app.type}</h4>
+                            <p class="text-xs text-gray-600">${app.time || 'Sin hora'}</p>
+                            ${app.notes ? `<p class="text-xs text-gray-500 mt-1">${app.notes}</p>` : ''}
+                        </div>
+                        <div class="flex-shrink-0">
+                            <button class="edit-appointment text-blue-500 hover:text-blue-700 mr-2 p-1" data-id="${app.id}"><i class="fas fa-edit"></i></button>
+                            <button class="delete-appointment text-red-500 hover:text-red-700 p-1" data-id="${app.id}"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                </div>`).join('');
+            appointmentsForDay.querySelectorAll('.edit-appointment').forEach(b => b.addEventListener('click', (e) => handleEditAppointment(e.currentTarget.dataset.id)));
+            appointmentsForDay.querySelectorAll('.delete-appointment').forEach(b => b.addEventListener('click', (e) => handleDeleteAppointment(e.currentTarget.dataset.id)));
+        }
 
- function getAppointmentColor(type) {
- switch (type) {
- case 'Hospital': return 'border-red-500';
- case 'Médico de Cabecera': return 'border-blue-500';
- case 'Cirujano': return 'border-purple-500';
- case 'Endocrino': return 'border-yellow-500';
- case 'Enfermera (Tensión)': return 'border-teal-500';
- case 'Otro Especialista': return 'border-indigo-500';
- default: return 'border-gray-500';
- }
- }
+        function getAppointmentColor(type) {
+            switch (type) {
+                case 'Hospital': return 'border-red-500';
+                case 'Médico de Cabecera': return 'border-blue-500';
+                case 'Cirujano': return 'border-purple-500';
+                case 'Endocrino': return 'border-yellow-500';
+                case 'Enfermera (Tensión)': return 'border-teal-500';
+                case 'Otro Especialista': return 'border-indigo-500';
+                default: return 'border-gray-500';
+            }
+        }
 
- async function saveAppointment(e) {
- e.preventDefault();
- if (!userId) {
- alert("Error: Debes estar autenticado para guardar citas.");
- console.warn("Autenticación requerida.");
- return;
- }
- showLoading("Guardando cita...");
- const id = document.getElementById('appointmentId').value;
- const data = {
- date: document.getElementById('appointmentDate').value,
- time: document.getElementById('appointmentTime').value,
- type: document.getElementById('appointmentType').value,
- notes: document.getElementById('appointmentNotes').value
- };
- try {
- const path = `artifacts/${appId}/users/${userId}/appointments`;
- if (id) {
- await updateDoc(doc(db, path, id), data);
- alert("Cita actualizada correctamente.");
- } else {
- await addDoc(collection(db, path), data);
- alert("Cita guardada correctamente.");
- }
- closeModal(appointmentModal);
- appointmentForm.reset();
- } catch (err) {
- console.error("Error guardando cita:", err);
- alert(`Error al guardar la cita: ${err.message}`);
- } finally {
- hideLoading();
- }
- }
+        async function saveAppointment(e) {
+            e.preventDefault();
+            if (!userId) {
+                alert("Error: Debes estar autenticado para guardar citas.");
+                console.warn("Autenticación requerida.");
+                return;
+            }
+            showLoading("Guardando cita...");
+            const id = document.getElementById('appointmentId').value;
+            const data = {
+                date: document.getElementById('appointmentDate').value,
+                time: document.getElementById('appointmentTime').value,
+                type: document.getElementById('appointmentType').value,
+                notes: document.getElementById('appointmentNotes').value
+            };
+            try {
+                const path = `artifacts/${appId}/users/${userId}/appointments`;
+                if (id) {
+                    await updateDoc(doc(db, path, id), data);
+                    alert("Cita actualizada correctamente.");
+                } else {
+                    await addDoc(collection(db, path), data);
+                    alert("Cita guardada correctamente.");
+                }
+                closeModal(appointmentModal);
+                appointmentForm.reset();
+            } catch (err) {
+                console.error("Error guardando cita:", err);
+                alert(`Error al guardar la cita: ${err.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
 
- function handleEditAppointment(id) {
- const app = appointments.find(a => a.id === id);
- if (app) {
- document.getElementById('appointmentId').value = app.id;
- document.getElementById('appointmentDate').value = app.date;
- document.getElementById('appointmentTime').value = app.time;
- document.getElementById('appointmentType').value = app.type;
- document.getElementById('appointmentNotes').value = app.notes || '';
- document.getElementById('appointmentModalTitle').textContent = "Editar Cita";
- openModal(appointmentModal);
- }
- }
+        function handleEditAppointment(id) {
+            const app = appointments.find(a => a.id === id);
+            if (app) {
+                document.getElementById('appointmentId').value = app.id;
+                document.getElementById('appointmentDate').value = app.date;
+                document.getElementById('appointmentTime').value = app.time;
+                document.getElementById('appointmentType').value = app.type;
+                document.getElementById('appointmentNotes').value = app.notes || '';
+                document.getElementById('appointmentModalTitle').textContent = "Editar Cita";
+                openModal(appointmentModal);
+            }
+        }
 
- function handleDeleteAppointment(id) {
- openConfirmDeleteModal("¿Eliminar esta cita?", async () => {
- if (!userId) {
- alert("Error: Debes estar autenticado para eliminar citas.");
- return;
- }
- showLoading("Eliminando cita...");
- try {
- await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/appointments`, id));
- alert("Cita eliminada correctamente.");
- } catch (err) {
- console.error("Error eliminando cita:", err);
- alert(`Error al eliminar la cita: ${err.message}`);
- } finally {
- hideLoading();
- }
- });
- }
+        function handleDeleteAppointment(id) {
+            openConfirmDeleteModal("¿Eliminar esta cita?", async () => {
+                if (!userId) {
+                    alert("Error: Debes estar autenticado para eliminar citas.");
+                    return;
+                }
+                showLoading("Eliminando cita...");
+                try {
+                    await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/appointments`, id));
+                    alert("Cita eliminada correctamente.");
+                } catch (err) {
+                    console.error("Error eliminando cita:", err);
+                    alert(`Error al eliminar la cita: ${err.message}`);
+                } finally {
+                    hideLoading();
+                }
+            });
+        }
 
- // --- Tensión Arterial ---
- function subscribeToBloodPressureReadings() {
- if (!userId) {
- console.warn("No hay userId para suscripción de tensión.");
- bloodPressureLog.innerHTML = '<p class="text-slate-600">Autenticación requerida.</p>';
- return;
- }
- const bpCol = collection(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`);
- const q = query(bpCol);
- unsubscribeBPReadings = onSnapshot(q, (snapshot) => {
- showLoading("Actualizando tensión...");
- bloodPressureReadings = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
- bloodPressureReadings.sort((a, b) => new Date(`${a.date}T${a.time || '00:00'}`) - new Date(`${b.date}T${b.time || '00:00'}`));
- renderBloodPressureLog();
- renderBPChart();
- hideLoading();
- }, (error) => {
- console.error("Error en suscripción de tensión:", error);
- alert(`Error al cargar registros de tensión: ${error.message}`);
- bloodPressureLog.innerHTML = '<p class="text-red-600">Error al cargar registros de tensión. Por favor, intenta de nuevo.</p>';
- hideLoading();
- });
- }
+        // --- Tensión Arterial ---
+        function subscribeToBloodPressureReadings() {
+            if (!userId) {
+                console.warn("No hay userId para suscripción de tensión.");
+                bloodPressureLog.innerHTML = '<p class="text-slate-600">Autenticación requerida.</p>';
+                return;
+            }
+            const bpCol = collection(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`);
+            const q = query(bpCol);
+            unsubscribeBPReadings = onSnapshot(q, (snapshot) => {
+                showLoading("Actualizando tensión...");
+                bloodPressureReadings = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                bloodPressureReadings.sort((a, b) => new Date(`${a.date}T${a.time || '00:00'}`) - new Date(`${b.date}T${b.time || '00:00'}`));
+                renderBloodPressureLog();
+                renderBPChart();
+                hideLoading();
+            }, (error) => {
+                console.error("Error en suscripción de tensión:", error);
+                alert(`Error al cargar registros de tensión: ${error.message}`);
+                bloodPressureLog.innerHTML = '<p class="text-red-600">Error al cargar registros de tensión. Por favor, intenta de nuevo.</p>';
+                hideLoading();
+            });
+        }
 
- function renderBloodPressureLog() {
- if (!userId) {
- bloodPressureLog.innerHTML = '<p class="text-slate-600">Autenticación requerida.</p>';
- return;
- }
- const reversed = [...bloodPressureReadings].reverse();
- if (reversed.length === 0) {
- bloodPressureLog.innerHTML = '<p class="text-slate-600">No hay registros.</p>';
- return;
- }
- bloodPressureLog.innerHTML = reversed.map(r => `
- <div class="p-3 bg-white rounded-md shadow border-l-4 border-sky-500">
- <div class="flex justify-between items-start">
- <div>
- <p class="font-semibold text-sm">${new Date(r.date + 'T' + (r.time || '00:00')).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} ${r.time ? '- ' + r.time : ''}</p>
- <p class="text-md text-gray-800">Sist: <b class="text-black">${r.systolic}</b>, Diast: <b class="text-black">${r.diastolic}</b> mmHg ${r.pulse ? `, Pulso: <b class="text-black">${r.pulse}</b> bpm` : ''}</p>
- ${r.notes ? `<p class="text-xs text-gray-500 mt-1">Notas: ${r.notes}</p>` : ''}
- </div>
- <div class="flex-shrink-0">
- <button class="delete-bp text-red-500 hover:text-red-700 p-1" data-id="${r.id}"><i class="fas fa-trash-alt"></i></button>
- </div>
- </div>
- </div>`).join('');
- bloodPressureLog.querySelectorAll('.delete-bp').forEach(b => b.addEventListener('click', (e) => handleDeleteBPReading(e.currentTarget.dataset.id)));
- }
+        function renderBloodPressureLog() {
+            if (!userId) {
+                bloodPressureLog.innerHTML = '<p class="text-slate-600">Autenticación requerida.</p>';
+                return;
+            }
+            const reversed = [...bloodPressureReadings].reverse();
+            if (reversed.length === 0) {
+                bloodPressureLog.innerHTML = '<p class="text-slate-600">No hay registros.</p>';
+                return;
+            }
+            bloodPressureLog.innerHTML = reversed.map(r => `
+                <div class="p-3 bg-white rounded-md shadow border-l-4 border-sky-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-semibold text-sm">${new Date(r.date + 'T' + (r.time || '00:00')).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} ${r.time ? '- ' + r.time : ''}</p>
+                            <p class="text-md text-gray-800">Sist: <b class="text-black">${r.systolic}</b>, Diast: <b class="text-black">${r.diastolic}</b> mmHg ${r.pulse ? `, Pulso: <b class="text-black">${r.pulse}</b> bpm` : ''}</p>
+                            ${r.notes ? `<p class="text-xs text-gray-500 mt-1">Notas: ${r.notes}</p>` : ''}
+                        </div>
+                        <div class="flex-shrink-0">
+                            <button class="delete-bp text-red-500 hover:text-red-700 p-1" data-id="${r.id}"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                </div>`).join('');
+            bloodPressureLog.querySelectorAll('.delete-bp').forEach(b => b.addEventListener('click', (e) => handleDeleteBPReading(e.currentTarget.dataset.id)));
+        }
 
- function handleDeleteBPReading(id) {
- openConfirmDeleteModal("¿Eliminar esta toma de tensión?", async () => {
- if (!userId) {
- alert("Error: Debes estar autenticado para eliminar registros de tensión.");
- return;
- }
- showLoading("Eliminando toma...");
- try {
- await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`, id));
- alert("Registro de tensión eliminado correctamente.");
- } catch (err) {
- console.error("Error eliminando toma:", err);
- alert(`Error al eliminar el registro de tensión: ${err.message}`);
- } finally {
- hideLoading();
- }
- });
- }
+        function handleDeleteBPReading(id) {
+            openConfirmDeleteModal("¿Eliminar esta toma de tensión?", async () => {
+                if (!userId) {
+                    alert("Error: Debes estar autenticado para eliminar registros de tensión.");
+                    return;
+                }
+                showLoading("Eliminando toma...");
+                try {
+                    await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`, id));
+                    alert("Registro de tensión eliminado correctamente.");
+                } catch (err) {
+                    console.error("Error eliminando toma:", err);
+                    alert(`Error al eliminar el registro de tensión: ${err.message}`);
+                } finally {
+                    hideLoading();
+                }
+            });
+        }
 
- function renderBPChart() {
- if (bpChartInstance) bpChartInstance.destroy();
- if (!bloodPressureReadings || bloodPressureReadings.length < 2) {
- document.getElementById('bpChart').style.display = 'none';
- bpChartMessage.textContent = "Se necesitan al menos dos registros para mostrar la evolución.";
- bpChartMessage.style.display = 'block';
- return;
- }
- document.getElementById('bpChart').style.display = 'block';
- bpChartMessage.style.display = 'none';
- const labels = bloodPressureReadings.map(r => `${new Date(r.date + 'T00:00').toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}${r.time ? ' ' + r.time.substring(0, 5) : ''}`);
- const systolic = bloodPressureReadings.map(r => r.systolic);
- const diastolic = bloodPressureReadings.map(r => r.diastolic);
- const pulse = bloodPressureReadings.map(r => r.pulse || null);
- bpChartInstance = new Chart(bpChartCanvas, {
- type: 'line',
- data: {
- labels,
- datasets: [
- { label: 'Sistólica', data: systolic, borderColor: 'rgb(239,68,68)', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.1, yAxisID: 'yPressure', pointRadius: 3, pointHoverRadius: 5 },
- { label: 'Diastólica', data: diastolic, borderColor: 'rgb(59,130,246)', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.1, yAxisID: 'yPressure', pointRadius: 3, pointHoverRadius: 5 },
- { label: 'Pulso', data: pulse, borderColor: 'rgb(16,185,129)', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.1, yAxisID: 'yPulse', pointRadius: 2, pointHoverRadius: 4, borderDash: [5, 5], hidden: !pulse.some(p => p !== null) }
- ]
- },
- options: {
- responsive: true,
- maintainAspectRatio: false,
- interaction: { mode: 'index', intersect: false },
- scales: {
- x: { title: { display: true, text: 'Fecha y Hora' } },
- yPressure: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Presión (mmHg)' }, suggestedMin: 50, suggestedMax: 180 },
- yPulse: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Pulso (bpm)' }, suggestedMin: 40, suggestedMax: 120, grid: { drawOnChartArea: false }, display: pulse.some(p => p !== null && !isNaN(p)) }
- },
- plugins: {
- legend: { position: 'top' },
- tooltip: { mode: 'index', intersect: false, callbacks: { label: (c) => `${c.dataset.label || ''}: ${c.parsed.y || ''} ${c.dataset.yAxisID === 'yPressure' ? 'mmHg' : 'bpm'}` } }
- }
- }
- });
- }
+        function renderBPChart() {
+            if (bpChartInstance) bpChartInstance.destroy();
+            if (!bloodPressureReadings || bloodPressureReadings.length < 2) {
+                document.getElementById('bpChart').style.display = 'none';
+                bpChartMessage.textContent = "Se necesitan al menos dos registros para mostrar la evolución.";
+                bpChartMessage.style.display = 'block';
+                return;
+            }
+            document.getElementById('bpChart').style.display = 'block';
+            bpChartMessage.style.display = 'none';
+            const labels = bloodPressureReadings.map(r => `${new Date(r.date + 'T00:00').toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}${r.time ? ' ' + r.time.substring(0, 5) : ''}`);
+            const systolic = bloodPressureReadings.map(r => r.systolic);
+            const diastolic = bloodPressureReadings.map(r => r.diastolic);
+            const pulse = bloodPressureReadings.map(r => r.pulse || null);
+            bpChartInstance = new Chart(bpChartCanvas, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Sistólica', data: systolic, borderColor: 'rgb(239,68,68)', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.1, yAxisID: 'yPressure', pointRadius: 3, pointHoverRadius: 5 },
+                        { label: 'Diastólica', data: diastolic, borderColor: 'rgb(59,130,246)', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.1, yAxisID: 'yPressure', pointRadius: 3, pointHoverRadius: 5 },
+                        { label: 'Pulso', data: pulse, borderColor: 'rgb(16,185,129)', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.1, yAxisID: 'yPulse', pointRadius: 2, pointHoverRadius: 4, borderDash: [5, 5], hidden: !pulse.some(p => p !== null) }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: { title: { display: true, text: 'Fecha y Hora' } },
+                        yPressure: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Presión (mmHg)' }, suggestedMin: 50, suggestedMax: 180 },
+                        yPulse: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Pulso (bpm)' }, suggestedMin: 40, suggestedMax: 120, grid: { drawOnChartArea: false }, display: pulse.some(p => p !== null && !isNaN(p)) }
+                    },
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: { mode: 'index', intersect: false, callbacks: { label: (c) => `${c.dataset.label || ''}: ${c.parsed.y || ''} ${c.dataset.yAxisID === 'yPressure' ? 'mmHg' : 'bpm'}` } }
+                    }
+                }
+            });
+        }
 
- async function saveBPReading(e) {
- e.preventDefault();
- if (!userId) {
- alert("Error: Debes estar autenticado para guardar registros de tensión.");
- console.warn("Autenticación requerida.");
- return;
- }
- showLoading("Guardando tensión...");
- const data = {
- date: document.getElementById('bpDate').value,
- time: document.getElementById('bpTime').value,
- systolic: parseInt(document.getElementById('bpSystolic').value),
- diastolic: parseInt(document.getElementById('bpDiastolic').value),
- pulse: document.getElementById('bpPulse').value ? parseInt(document.getElementById('bpPulse').value) : null,
- notes: document.getElementById('bpNotes').value
- };
- try {
- await addDoc(collection(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`), data);
- alert("Registro de tensión guardado correctamente.");
- closeModal(bpModal);
- bpForm.reset();
- } catch (err) {
- console.error("Error guardando tensión:", err);
- alert(`Error al guardar el registro de tensión: ${err.message}`);
- } finally {
- hideLoading();
- }
- }
+        async function saveBPReading(e) {
+            e.preventDefault();
+            if (!userId) {
+                alert("Error: Debes estar autenticado para guardar registros de tensión.");
+                console.warn("Autenticación requerida.");
+                return;
+            }
+            showLoading("Guardando tensión...");
+            const data = {
+                date: document.getElementById('bpDate').value,
+                time: document.getElementById('bpTime').value,
+                systolic: parseInt(document.getElementById('bpSystolic').value),
+                diastolic: parseInt(document.getElementById('bpDiastolic').value),
+                pulse: document.getElementById('bpPulse').value ? parseInt(document.getElementById('bpPulse').value) : null,
+                notes: document.getElementById('bpNotes').value
+            };
+            try {
+                await addDoc(collection(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`), data);
+                alert("Registro de tensión guardado correctamente.");
+                closeModal(bpModal);
+                bpForm.reset();
+            } catch (err) {
+                console.error("Error guardando tensión:", err);
+                alert(`Error al guardar el registro de tensión: ${err.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
 
- // --- Inicialización ---
- document.addEventListener('DOMContentLoaded', initializeAppAuth);
- </script>
+        // --- Inicialización ---
+        document.addEventListener('DOMContentLoaded', initializeAppAuth);
+    </script>
 </body>
 </html>
