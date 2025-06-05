@@ -208,10 +208,9 @@
                         <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Jue</div>
                         <div class="text-center font-semibold text-slate-700 py-2 text-xs sm:text-sm">Vie</div>
                         <div class="text-center font-semibold text-sky-600 py-2 text-xs sm:text-sm">Sáb</div> 
-                        <div class="text-center font-semibold text-sky-600 py-2 text-xs sm:text-sm">Dom</div> 
+                        <div class="text-center font-semibold text-sky-600 py-2 text-xs sm:text-sm">Dom</div>
                     </div>
                     <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 p-1">
-                        
                     </div>
                 </section>
 
@@ -243,6 +242,7 @@
         </div>
     </div>
 
+    <!-- Modal para Añadir/Editar Cita -->
     <div id="appointmentModal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="closeAppointmentModal">&times;</span>
@@ -280,6 +280,7 @@
         </div>
     </div>
 
+    <!-- Modal para Añadir Toma de Tensión -->
     <div id="bpModal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="closeBPModal">&times;</span>
@@ -319,6 +320,7 @@
         </div>
     </div>
 
+    <!-- Modal de Confirmación de Eliminación -->
     <div id="confirmDeleteModal" class="modal">
         <div class="modal-content">
             <h3 class="text-lg sm:text-xl font-semibold mb-4">Confirmar Eliminación</h3>
@@ -341,14 +343,14 @@
         // Configuración de Firebase
         const firebaseConfigFromGlobal = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const firebaseConfig = firebaseConfigFromGlobal || {
-            apiKey: "AIzaSyCB_GtOMByc22KD__hd0dp1Y1XijFehCtE",
+            apiKey: "AIzaSyCB_GtOMByc22KD__hd0dp1Y1XijFehCtE", 
             authDomain: "abuapp-ed946.firebaseapp.com",
             databaseURL: "https://abuapp-ed946-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "abuapp-ed946",
             storageBucket: "abuapp-ed946.firebasestorage.app",
             messagingSenderId: "144970687143",
             appId: "1:144970687143:web:35ad5f75b89af8d2c4f182"
-            };
+        };
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'calendario-bienestar-default';
 
@@ -429,12 +431,23 @@
             try {
                 await setPersistence(auth, browserLocalPersistence);
                 const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (authToken) await signInWithCustomToken(auth, authToken);
-                else await signInAnonymously(auth);
+                if (authToken) {
+                    console.log("Intentando signInWithCustomToken con token:", authToken);
+                    console.log("Usando Firebase projectId:", firebaseConfig.projectId);
+                    await signInWithCustomToken(auth, authToken);
+                } else {
+                    console.log("No hay token personalizado, intentando signInAnonymously...");
+                    await signInAnonymously(auth);
+                }
             } catch (error) {
                 console.error("Error en autenticación inicial:", error);
                 if (error.code === 'auth/invalid-custom-token' || error.code === 'auth/custom-token-mismatch') {
-                    try { await signInAnonymously(auth); } catch (e) { console.error("Error en fallback anónimo:", e); }
+                    console.log("Token personalizado inválido o no coincide, intentando signInAnonymously como fallback...");
+                    try {
+                        await signInAnonymously(auth);
+                    } catch (e) { 
+                        console.error("Error en signInAnonymously como fallback:", e); 
+                    }
                 }
             }
 
@@ -442,10 +455,12 @@
                 if (user) {
                     userId = user.uid;
                     userIdDisplay.textContent = userId;
+                    console.log("Usuario autenticado:", userId);
                     await loadInitialData();
                 } else {
                     userId = null;
                     userIdDisplay.textContent = "No autenticado";
+                    console.log("Usuario no autenticado.");
                     appointments = []; bloodPressureReadings = [];
                     renderCalendar(); renderAppointmentsForDay(); renderBloodPressureLog(); renderBPChart();
                     hideLoading();
@@ -468,7 +483,13 @@
 
         // --- Versículo Bíblico ---
         async function fetchBibleVerse() {
-            const verses = [ /* ... lista de versículos ... */ ]; // Mantener lista por si falla API
+            const verses = [ 
+                { text: "El Señor es mi pastor, nada me faltará.", cite: "Salmo 23:1" }, 
+                { text: "Todo lo puedo en Cristo que me fortalece.", cite: "Filipenses 4:13" },
+                { text: "Porque donde esté vuestro tesoro, allí estará también vuestro corazón.", cite: "Mateo 6:21"},
+                { text: "Encomienda a Jehová tus obras, Y tus pensamientos serán afirmados.", cite: "Proverbios 16:3"},
+                { text: "El amor es paciente, es bondadoso. El amor no es envidioso ni jactancioso ni orgulloso.", cite: "1 Corintios 13:4"}
+            ]; 
             try {
                 const prompt = "Dame un versículo bíblico inspirador corto en español con su cita.";
                 let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
@@ -478,41 +499,108 @@
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (!response.ok) throw new Error(`API Error: ${response.status}`);
                 const result = await response.json();
-                if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    const match = text.match(/(.*) - (.*)/) || text.match(/(.*)\((.*)\)/);
-                    if (match?.[2]) {
-                        bibleVerseText.textContent = `"${match[1].trim()}"`;
-                        bibleVerseCite.textContent = `- ${match[2].trim()}`;
+                
+                const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (rawText) {
+                    const text = rawText.trim();
+                    let verse = "";
+                    let citation = "";
+
+                    // Regex para "Verso - Cita" o "Verso (Cita)" o "Verso CitaAlFinalConNumeros"
+                    // Intenta capturar (Verso) [-–—(] (Cita posible al final)
+                    // O (Verso largo) (Cita corta con números al final)
+                    const regexMain = /^(.*?) *[-–—(] *([^)-–—]+?)[)-–—]*$/; // Verso - Cita or Verso (Cita)
+                    const regexEndCite = /^(.*?) +([A-Za-záéíóúñÑ]+\.? +[\d:]+[\w-]*)$/; // Verso CitaAlFinal (e.g. Juan 3:16)
+                    
+                    let match = text.match(regexMain);
+
+                    if (match && match[1] && match[2]) {
+                        let part1 = match[1].trim();
+                        let part2 = match[2].trim();
+                        // Heurística: la cita suele ser más corta o contener números
+                        if ((part2.length < part1.length && part2.length < 35) || /\d/.test(part2) || (part1.length < 20 && part2.length > part1.length && !/\d/.test(part1))) {
+                            verse = part1;
+                            citation = part2;
+                        } else {
+                            verse = part2; // Podría ser que la API devuelva Cita - Verso
+                            citation = part1;
+                        }
                     } else {
-                        const lastSpace = text.lastIndexOf(' ');
-                        bibleVerseText.textContent = `"${lastSpace > 0 ? text.substring(0, lastSpace) : text}"`;
-                        bibleVerseCite.textContent = lastSpace > 0 ? `- ${text.substring(lastSpace + 1)}` : "";
+                        match = text.match(regexEndCite); // Probar con cita de libro y números al final
+                        if (match && match[1] && match[2]) {
+                             verse = match[1].trim();
+                             citation = match[2].trim();
+                        } else {
+                            // Si no hay separador claro, tomar todo como verso
+                            verse = text;
+                            // Intentar extraer heurísticamente una cita de las últimas palabras si contienen números
+                            const words = text.split(' ');
+                            if (words.length >= 2) { // Necesita al menos Libro + Ref
+                                let potentialCite = words.slice(-2).join(' '); // Últimas dos palabras
+                                if (/\d/.test(potentialCite) && potentialCite.length < 30) {
+                                    verse = words.slice(0, -2).join(' ');
+                                    citation = potentialCite;
+                                } else {
+                                    potentialCite = words.slice(-1).join(' '); // Última palabra
+                                     if (/\d/.test(potentialCite) && potentialCite.length < 20) {
+                                        verse = words.slice(0, -1).join(' ');
+                                        citation = potentialCite;
+                                    }
+                                }
+                            }
+                        }
                     }
-                } else throw new Error("Respuesta API inesperada.");
+                    
+                    // Limpiar comillas existentes del verso y la cita antes de añadir las nuestras
+                    const cleanQuote = (str) => str.replace(/^["“']+|["”']+$|(?<=\s)[-–—]["“']+|["“']+(?=\s[-–—])/g, '').trim();
+                    verse = cleanQuote(verse);
+                    citation = cleanQuote(citation);
+
+                    if (verse) {
+                        bibleVerseText.textContent = `"${verse}"`;
+                    } else if (text) { // Fallback si el parseo de 'verse' falla pero 'text' existe
+                        bibleVerseText.textContent = `"${cleanQuote(text)}"`; // Usar texto original limpio
+                        citation = ""; // No podemos estar seguros de la cita en este caso
+                    } else {
+                         bibleVerseText.textContent = `""`; // Si no hay texto en absoluto
+                    }
+                    
+                    bibleVerseCite.textContent = citation ? `- ${citation}` : "";
+
+                    // Última revisión: si el verso está vacío pero la cita no, y el texto original existía, usar el texto original.
+                    if (bibleVerseText.textContent === `""` && text) {
+                         bibleVerseText.textContent = `"${cleanQuote(text)}"`;
+                         bibleVerseCite.textContent = ""; 
+                    }
+
+                } else {
+                    throw new Error("Respuesta API inesperada o vacía.");
+                }
             } catch (error) {
                 console.warn("Error API versículo, usando local:", error);
-                const randomVerse = verses[Math.floor(Math.random() * verses.length)] || { text: "Confía en el Señor.", cite: "Proverbios 3:5" };
+                const randomVerse = verses[Math.floor(Math.random() * verses.length)] || { text: "Confía en el Señor con todo tu corazón.", cite: "Proverbios 3:5" };
                 bibleVerseText.textContent = `"${randomVerse.text}"`;
                 bibleVerseCite.textContent = `- ${randomVerse.cite}`;
             }
         }
+
 
         // --- Event Listeners ---
         function setupEventListeners() {
             prevMonthButton.addEventListener('click', () => { currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; } renderCalendar(); });
             nextMonthButton.addEventListener('click', () => { currentMonth++; if (currentMonth > 11) { currentMonth = 0; currentYear++; } renderCalendar(); });
             openAddAppointmentModalButton.addEventListener('click', () => {
-                appointmentForm.reset(); appointmentId.value = '';
-                appointmentModalTitle.textContent = "Añadir Nueva Cita";
-                appointmentDate.value = selectedDate || new Date().toISOString().split('T')[0];
-                appointmentTime.value = new Date().toTimeString().substring(0,5);
+                appointmentForm.reset(); document.getElementById('appointmentId').value = ''; 
+                document.getElementById('appointmentModalTitle').textContent = "Añadir Nueva Cita";
+                document.getElementById('appointmentDate').value = selectedDate || new Date().toISOString().split('T')[0];
+                document.getElementById('appointmentTime').value = new Date().toTimeString().substring(0,5);
                 openModal(appointmentModal);
             });
             openAddBPModalButton.addEventListener('click', () => {
                 bpForm.reset();
-                bpDate.value = new Date().toISOString().split('T')[0];
-                bpTime.value = new Date().toTimeString().substring(0,5);
+                document.getElementById('bpDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('bpTime').value = new Date().toTimeString().substring(0,5);
                 openModal(bpModal);
             });
             closeAppointmentModalButton.addEventListener('click', () => closeModal(appointmentModal));
@@ -535,7 +623,6 @@
             const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
             const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
             const daysInMonth = lastDayOfMonth.getDate();
-            // Ajuste para que Lunes sea 0, Martes 1, ..., Domingo 6
             let startDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
 
             currentMonthYearDisplay.textContent = `${firstDayOfMonth.toLocaleString('es-ES', { month: 'long' })} ${currentYear}`;
@@ -545,40 +632,24 @@
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayCell = document.createElement('div');
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const currentDateObj = new Date(dateStr + "T00:00:00"); // Para obtener el día de la semana correctamente
-                const dayOfWeek = (currentDateObj.getDay() + 6) % 7; // Lunes = 0, ..., Domingo = 6
+                const currentDateObj = new Date(dateStr + "T00:00:00"); 
+                const dayOfWeek = (currentDateObj.getDay() + 6) % 7; 
 
                 let cellClasses = ['calendar-day', 'relative', 'p-2', 'h-16', 'sm:h-20', 'text-center', 'cursor-pointer', 'rounded-lg', 'text-sm', 'flex', 'items-center', 'justify-center'];
-                
-                // Estilos base (no seleccionado, no hoy, no finde)
                 cellClasses.push('bg-white', 'text-gray-700', 'hover:bg-blue-100');
-
                 dayCell.textContent = day;
                 dayCell.dataset.date = dateStr;
-                
-                // Aplicar clases base
                 dayCell.className = cellClasses.join(' ');
 
-
-                if (dayOfWeek === 5 || dayOfWeek === 6) { // Sábado (5) o Domingo (6)
+                if (dayOfWeek === 5 || dayOfWeek === 6) { 
                     dayCell.classList.add('weekend-day');
-                     // Quitar hover normal si es finde y no está seleccionado
-                    if (dateStr !== selectedDate) {
-                        dayCell.classList.remove('hover:bg-blue-100');
-                    }
+                    if (dateStr !== selectedDate) dayCell.classList.remove('hover:bg-blue-100');
                 }
                 
                 if (dateStr === todayDateStr) {
                     dayCell.classList.add('today');
-                    if (dateStr !== selectedDate) { // Si es hoy pero no está seleccionado
-                        dayCell.classList.remove('hover:bg-blue-100'); // Quitar hover normal
-                        // El hover de 'today' (si no es finde) se maneja en CSS
-                        if(dayCell.classList.contains('weekend-day')){
-                             // El hover de 'weekend-day' ya está definido y es correcto
-                        } else {
-                            // Si es 'today' pero no 'weekend-day' y no 'selected'
-                            // El hover se define en CSS: #calendarGrid .calendar-day.today:not(.selected):hover
-                        }
+                    if (dateStr !== selectedDate) { 
+                        dayCell.classList.remove('hover:bg-blue-100'); 
                     }
                 }
 
@@ -587,7 +658,6 @@
                 }
 
                 if (dateStr === selectedDate) {
-                    // Limpiar clases de fondo/texto conflictivas antes de añadir 'selected'
                     dayCell.classList.remove('bg-white', 'text-gray-700', 'hover:bg-blue-100', 'weekend-day', 'today');
                     dayCell.classList.add('selected');
                 }
@@ -634,7 +704,7 @@
             if (dayApps.length === 0) {
                 appointmentsForDay.innerHTML = '<p class="text-slate-600">No hay citas este día.</p>'; return;
             }
-            appointmentsForDay.innerHTML = dayApps.map(app =>
+            appointmentsForDay.innerHTML = dayApps.map(app => `
                 <div class="p-3 bg-white rounded-md shadow border-l-4 ${getAppointmentColor(app.type)}">
                     <div class="flex justify-between items-start">
                         <div>
@@ -643,11 +713,11 @@
                             ${app.notes ? `<p class="text-xs text-gray-500 mt-1">${app.notes}</p>` : ''}
                         </div>
                         <div class="flex-shrink-0">
-                            <button class="edit-appointment text-blue-500 hov:text-blue-700 mr-2 p-1" data-id="${app.id}"><i class="fas fa-edit"></i></button>
-                            <button class="delete-appointment text-red-500 hov:text-red-700 p-1" data-id="${app.id}"><i class="fas fa-trash-alt"></i></button>
+                            <button class="edit-appointment text-blue-500 hover:text-blue-700 mr-2 p-1" data-id="${app.id}"><i class="fas fa-edit"></i></button>
+                            <button class="delete-appointment text-red-500 hover:text-red-700 p-1" data-id="${app.id}"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </div>
-                </div>).join('');
+                </div>`).join('');
             appointmentsForDay.querySelectorAll('.edit-appointment').forEach(b => b.addEventListener('click', (e) => handleEditAppointment(e.currentTarget.dataset.id)));
             appointmentsForDay.querySelectorAll('.delete-appointment').forEach(b => b.addEventListener('click', (e) => handleDeleteAppointment(e.currentTarget.dataset.id)));
         }
@@ -667,8 +737,13 @@
         async function saveAppointment(e) {
             e.preventDefault(); if (!userId) { console.warn("Autenticación requerida."); return; }
             showLoading("Guardando cita...");
-            const id = appointmentId.value;
-            const data = { date: appointmentDate.value, time: appointmentTime.value, type: appointmentType.value, notes: appointmentNotes.value };
+            const id = document.getElementById('appointmentId').value; 
+            const data = { 
+                date: document.getElementById('appointmentDate').value, 
+                time: document.getElementById('appointmentTime').value, 
+                type: document.getElementById('appointmentType').value, 
+                notes: document.getElementById('appointmentNotes').value 
+            };
             try {
                 const path = `artifacts/${appId}/users/${userId}/appointments`;
                 if (id) await updateDoc(doc(db, path, id), data);
@@ -680,9 +755,13 @@
         function handleEditAppointment(id) {
             const app = appointments.find(a => a.id === id);
             if (app) {
-                appointmentId.value = app.id; appointmentDate.value = app.date; appointmentTime.value = app.time;
-                appointmentType.value = app.type; appointmentNotes.value = app.notes || '';
-                appointmentModalTitle.textContent = "Editar Cita"; openModal(appointmentModal);
+                document.getElementById('appointmentId').value = app.id; 
+                document.getElementById('appointmentDate').value = app.date; 
+                document.getElementById('appointmentTime').value = app.time;
+                document.getElementById('appointmentType').value = app.type; 
+                document.getElementById('appointmentNotes').value = app.notes || '';
+                document.getElementById('appointmentModalTitle').textContent = "Editar Cita"; 
+                openModal(appointmentModal);
             }
         }
 
@@ -707,8 +786,8 @@
                 hideLoading();
             }, (error) => { console.error("Error suscripción tensión:", error); hideLoading(); });
         }
-        /* ... misma función, ajustada para nueva estética si es necesario ... */
-        function renderBloodPressureLog() {
+
+        function renderBloodPressureLog() { 
             if (!userId) { bloodPressureLog.innerHTML = '<p class="text-slate-600">Autenticación requerida.</p>'; return; }
             const reversed = [...bloodPressureReadings].reverse();
             if (reversed.length === 0) { bloodPressureLog.innerHTML = '<p class="text-slate-600">No hay registros.</p>'; return; }
@@ -721,7 +800,7 @@
                             ${r.notes?`<p class="text-xs text-gray-500 mt-1">Notas: ${r.notes}</p>`:''}
                         </div>
                         <div class="flex-shrink-0">
-                            <button class="delete-bp text-red-500 hov:text-red-700 p-1" data-id="${r.id}"><i class="fas fa-trash-alt"></i></button>
+                            <button class="delete-bp text-red-500 hover:text-red-700 p-1" data-id="${r.id}"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </div>
                 </div>`).join('');
@@ -731,7 +810,14 @@
         async function saveBPReading(e) {
             e.preventDefault(); if (!userId) { console.warn("Autenticación requerida."); return; }
             showLoading("Guardando tensión...");
-            const data = { date: bpDate.value, time: bpTime.value, systolic: parseInt(bpSystolic.value), diastolic: parseInt(bpDiastolic.value), pulse: bpPulse.value ? parseInt(bpPulse.value) : null, notes: bpNotes.value };
+            const data = { 
+                date: document.getElementById('bpDate').value, 
+                time: document.getElementById('bpTime').value, 
+                systolic: parseInt(document.getElementById('bpSystolic').value), 
+                diastolic: parseInt(document.getElementById('bpDiastolic').value), 
+                pulse: document.getElementById('bpPulse').value ? parseInt(document.getElementById('bpPulse').value) : null, 
+                notes: document.getElementById('bpNotes').value 
+            };
             try {
                 await addDoc(collection(db, `artifacts/${appId}/users/${userId}/bloodPressureReadings`), data);
                 closeModal(bpModal); bpForm.reset();
@@ -746,7 +832,7 @@
             });
         }
 
-        function renderBPChart() { /* ... misma función ... */
+        function renderBPChart() { 
             if (bpChartInstance) bpChartInstance.destroy();
             if (!bloodPressureReadings || bloodPressureReadings.length < 2) {
                 document.getElementById('bpChart').style.display = 'none';
