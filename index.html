@@ -112,17 +112,40 @@
             transform: scale(1.05); /* Pequeño efecto al seleccionar */
         }
 
-        #calendarGrid .calendar-day.has-appointment::after {
-            content: '';
-            position: absolute;
-            bottom: 4px; /* Ajustar posición vertical del punto */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 7px; /* Punto un poco más grande */
-            height: 7px;
-            background-color: #c53030; /* Tailwind red-700 (más oscuro) */
-            border-radius: 50%;
-            border: 1px solid white; /* Borde blanco para el punto */
+        #calendarGrid .calendar-day.has-appointment {
+            background-color: #f0f9ff; /* Color base para días con citas */
+            position: relative;
+        }
+
+        /* Colores diferentes según el tipo de cita */
+        #calendarGrid .calendar-day.has-appointment.hospital {
+            background-color: #fee2e2; /* Rojo claro para hospital */
+            border: 1px solid #ef4444;
+        }
+
+        #calendarGrid .calendar-day.has-appointment.doctor {
+            background-color: #dbeafe; /* Azul claro para médico */
+            border: 1px solid #3b82f6;
+        }
+
+        #calendarGrid .calendar-day.has-appointment.surgeon {
+            background-color: #f3e8ff; /* Morado claro para cirujano */
+            border: 1px solid #8b5cf6;
+        }
+
+        #calendarGrid .calendar-day.has-appointment.endocrino {
+            background-color: #fef9c3; /* Amarillo claro para endocrino */
+            border: 1px solid #facc15;
+        }
+
+        #calendarGrid .calendar-day.has-appointment.nurse {
+            background-color: #ccfbf1; /* Verde claro para enfermera */
+            border: 1px solid #10b981;
+        }
+
+        #calendarGrid .calendar-day.has-appointment.other {
+            background-color: #e0e7ff; /* Índigo claro para otros */
+            border: 1px solid #6366f1;
         }
 
         #calendarGrid .calendar-day.today {
@@ -165,6 +188,15 @@
             background-color: #cbd5e1;
         }
 
+        #calendarGrid .calendar-day.has-appointment.selected {
+            background-color: #1d4ed8 !important;
+            color: white !important;
+            border: none !important;
+        }
+
+        #calendarGrid .calendar-day.has-appointment.today:not(.selected) {
+            border: 2px solid #0ea5e9 !important;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -653,9 +685,27 @@
                     }
                 }
 
-                if (appointments.some(app => app.date === dateStr)) {
+                const dayAppointments = appointments.filter(app => app.date === dateStr);
+                if (dayAppointments.length > 0) {
                     dayCell.classList.add('has-appointment');
+                    
+                    // Determinar el tipo de cita predominante para ese día
+                    const types = dayAppointments.map(app => app.type.toLowerCase());
+                    if (types.includes('hospital')) {
+                        dayCell.classList.add('hospital');
+                    } else if (types.includes('médico de cabecera')) {
+                        dayCell.classList.add('doctor');
+                    } else if (types.includes('cirujano')) {
+                        dayCell.classList.add('surgeon');
+                    } else if (types.includes('endocrino')) {
+                        dayCell.classList.add('endocrino');
+                    } else if (types.includes('enfermera')) {
+                        dayCell.classList.add('nurse');
+                    } else {
+                        dayCell.classList.add('other');
+                    }
                 }
+
 
                 if (dateStr === selectedDate) {
                     dayCell.classList.remove('bg-white', 'text-gray-700', 'hover:bg-blue-100', 'weekend-day', 'today');
